@@ -1,3 +1,9 @@
+# 1.1.1 — library updates
+
+- Updated NAudio.Wasapi (audio capture) from 3.0.1 to 3.1.0 and sherpa-onnx (optional speaker labels) from 1.13.5 to 1.13.8. These are maintenance updates. The parts of each library the app uses behaved identically in every test, including the real audio-capture test; see [VERIFICATION.md](VERIFICATION.md).
+- Nothing else in the app changed. Settings, downloaded models and language packs carry over unchanged.
+- The same real-VRChat, SteamVR and phone checks are still outstanding (see [ACCEPTANCE_CHECKLIST.md](ACCEPTANCE_CHECKLIST.md)), so this is still a pre-release.
+
 # 1.1.0 — desktop conversation upgrade
 
 - Six focused tabs: Live, History, Replies, Settings, Headset, Advanced. Readable dark dropdowns, dark secondary controls, larger body text and keyboard-focus outlines.

@@ -1,6 +1,23 @@
-# Verification — version 1.1.0
+# Verification — versions 1.1.0 and 1.1.1
 
 This records what was actually run and what was not. It is not a claim of bug-free or fully hardware-accepted software; see "Not verified" below.
+
+## Release 1.1.1, 2026-10-11
+
+1.1.1 changes two libraries and nothing else in the app: NAudio.Wasapi 3.0.1 to 3.1.0 (audio capture) and sherpa-onnx 1.13.5 to 1.13.8 (optional speaker labels). NAudio 3.1.0's release notes list two breaking API changes (`WaveFormat` marshalling and the `IsFormatSupported` return type); the app uses neither. Each update was tested alone and then together, against the same tests, on the same PC:
+
+| Check | 1.1.0 libraries | 1.1.1 libraries |
+| --- | --- | --- |
+| Debug and Release build, warnings as errors | 0 warnings, 0 errors | 0 warnings, 0 errors |
+| Automated checks | 51/51 | 51/51 |
+| WPF `--smoke-test`, `--phone-self-test` | pass | pass |
+| Real WASAPI process capture (`--capture-proof`, two short test tones) | selected process 14.999%, unrelated process 0.000% | 14.999%, 0.000% (identical) |
+| Real speaker embeddings (`--speaker-test`, three public recordings) | Speaker 1, Speaker 1, Unknown speaker | the same three labels |
+| Real Whisper pipeline (`--pipeline-test`, base model, jfk.wav) | about 1.65 to 2.0 s per caption | 1.68 to 2.4 s across runs (run-to-run noise on a busy PC; Whisper uses neither updated library) |
+| Package contents | 656 files | 656 files; only two native DLLs differ in size (+0.4 MB in total); licenses unchanged |
+| Known-vulnerable packages | none | none |
+
+Still not verified, as for 1.1.0: anything against real VRChat, SteamVR, a headset, or a physical phone.
 
 ## Phone display hardening, 2026-10-09
 

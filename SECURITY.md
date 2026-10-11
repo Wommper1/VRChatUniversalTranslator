@@ -37,7 +37,7 @@ These are deliberate or unavoidable, so please do not report them as vulnerabili
 ## Verifying a download
 
 ```powershell
-Get-FileHash .\VRChatUniversalTranslator-1.1.0-win-x64-portable.zip -Algorithm SHA256
+Get-FileHash .\VRChatUniversalTranslator-1.1.1-win-x64-portable.zip -Algorithm SHA256
 ```
 
 The result must equal the line for that file in `SHA256SUMS.txt` on the same release page.
