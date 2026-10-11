@@ -1,5 +1,6 @@
 name: Feature request
 description: Suggest something the app could do
+title: "[Feature]: "
 labels: [enhancement]
 body:
   - type: markdown

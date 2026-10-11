@@ -1,5 +1,6 @@
 name: Bug report
 description: Something does not work the way the documentation says
+title: "[Bug]: "
 labels: [bug]
 body:
   - type: markdown
