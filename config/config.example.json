@@ -1,0 +1,52 @@
+{
+  "selectedMode": "Balanced",
+  "protectVrchatPerformance": true,
+  "translationEnabled": true,
+  "showOriginalText": false,
+  "saveTranscripts": false,
+  "vadSensitivity": 0.008,
+  "targetLanguage": "en",
+  "sourceLanguage": "auto",
+  "preloadOutputLanguage": false,
+  "speakerLabelsEnabled": false,
+  "minimizeToTray": true,
+  "closeToTray": false,
+  "listeningShortcut": "Ctrl+Alt+L",
+  "pauseShortcut": "Ctrl+Alt+P",
+  "visibilityShortcut": "Ctrl+Alt+H",
+  "wordCorrections": [],
+  "headset": { "enabled": false, "distance": 1.5, "verticalOffset": -0.35, "widthMeters": 1.2 },
+  "overlay": {
+    "enabled": true,
+    "alwaysOnTop": true,
+    "clickThrough": true,
+    "fontSize": 32,
+    "opacity": 0.88,
+    "captionDurationSeconds": 6,
+    "maximumVisibleLines": 3,
+    "left": null,
+    "top": null,
+    "width": 920,
+    "height": 180
+  },
+  "phoneDisplay": {
+    "enabled": false,
+    "port": 8765,
+    "allowLan": false,
+    "requirePin": false
+  },
+  "customMode": {
+    "model": "Base multilingual",
+    "backend": "CPU",
+    "computeType": "Float32",
+    "cpuThreads": 4,
+    "chunkLengthSeconds": 6,
+    "vadThreshold": 0.008,
+    "captionDelaySeconds": 0,
+    "maximumQueueLength": 3,
+    "translationEnabled": true
+  },
+  "customVocabulary": [
+    "VRChat"
+  ]
+}

@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/VRChatTranslator.Core/VRChatTranslator.Core.csproj" />
+    <Project Path="src/VRChatTranslator.Audio/VRChatTranslator.Audio.csproj" />
+    <Project Path="src/VRChatTranslator.Speech/VRChatTranslator.Speech.csproj" />
+    <Project Path="src/VRChatTranslator.App/VRChatTranslator.App.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/VRChatTranslator.AudioProofSource/VRChatTranslator.AudioProofSource.csproj" />
+    <Project Path="tests/VRChatTranslator.Core.Tests/VRChatTranslator.Core.Tests.csproj" />
+  </Folder>
+</Solution>

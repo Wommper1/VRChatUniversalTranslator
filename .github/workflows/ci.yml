@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore VRChatUniversalTranslator.slnx --configfile NuGet.Config
+
+      - name: Build (warnings are errors)
+        run: dotnet build VRChatUniversalTranslator.slnx --configuration Release --no-restore
+
+      - name: Deterministic tests
+        run: dotnet run --no-build --configuration Release --project tests/VRChatTranslator.Core.Tests/VRChatTranslator.Core.Tests.csproj
+
+      - name: Known-vulnerable packages
+        shell: pwsh
+        run: |
+          $out = dotnet list VRChatUniversalTranslator.slnx package --vulnerable --include-transitive 2>&1 | Out-String
+          Write-Host $out
+          if ($out -match 'has the following vulnerable packages') { throw 'A vulnerable package was found.' }

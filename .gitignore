@@ -1,0 +1,16 @@
+bin/
+obj/
+.vs/
+.idea/
+*.user
+*.suo
+*.cache
+*.log
+logs/*
+!logs/.gitkeep
+models/*
+!models/README.md
+config/config.json
+artifacts/
+TestResults/
+

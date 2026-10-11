@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>VRChatTranslator.Audio</RootNamespace>
+    <AssemblyName>VRChatTranslator.Audio</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NAudio.Wasapi" Version="3.0.1" />
+    <ProjectReference Include="..\VRChatTranslator.Core\VRChatTranslator.Core.csproj" />
+  </ItemGroup>
+</Project>
+

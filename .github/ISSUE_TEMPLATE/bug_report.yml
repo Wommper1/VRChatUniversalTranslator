@@ -1,0 +1,54 @@
+name: Bug report
+description: Something does not work the way the documentation says
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting this. **Do not paste real conversations, other people's VRChat names, or anything private.**
+        For a security problem, stop here and follow SECURITY.md instead of opening a public issue.
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: Right-click the executable, Properties, Details tab. Or the ZIP name.
+      placeholder: "1.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where does it happen?
+      options:
+        - Captions on the desktop overlay
+        - SteamVR headset captions
+        - Phone display
+        - Replies / OSC
+        - Language tools or language packs
+        - Model download
+        - Settings or shortcuts
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. ...\n2. ..."
+  - type: input
+    id: system
+    attributes:
+      label: Your PC
+      description: Windows version, CPU, RAM, and whether you use a headset (which one) or a phone display.
+  - type: textarea
+    id: log
+    attributes:
+      label: Diagnostic log lines (optional)
+      description: Open the folder %LOCALAPPDATA%\TheLevelEverythingCompany\VRChatUniversalTranslator\logs and paste only the few lines around the problem. Logs contain no captions or audio, but check for anything you would rather not share.
+      render: text

@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>VRChatTranslator.Speech</RootNamespace>
+    <AssemblyName>VRChatTranslator.Speech</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Whisper.net" Version="1.9.1" />
+    <PackageReference Include="org.k2fsa.sherpa.onnx" Version="1.13.5" />
+    <PackageReference Include="Whisper.net.Runtime" Version="1.9.1" />
+    <ProjectReference Include="..\VRChatTranslator.Core\VRChatTranslator.Core.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,20 @@
+# Hash-locked Python dependencies for the optional offline language tools.
+# Generated 2026-10-11 with the project's pinned CPython 3.13 (win_amd64): pip install --dry-run --report ... of
+#   ctranslate2==4.8.1 sentencepiece==0.2.2 sacremoses==0.2.0 subword-nmt==0.3.8
+# Installed with: pip install --require-hashes --no-deps --only-binary=:all: -r requirements-translation.txt
+# To update: regenerate the list the same way, review the changes, and update setup-translation.ps1 and ready-v2.txt text.
+
+click==8.5.0 --hash=sha256:255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360
+cloudpickle==3.1.2 --hash=sha256:9acb47f6afd73f60dc1df93bb801b472f05ff42fa6c84167d25cb206be1fbf4a
+colorama==0.4.6 --hash=sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6
+ctranslate2==4.8.1 --hash=sha256:d52499f05a60a791aeadee28d609efa130142f376d1ea76b2b1c593bb01f8827
+joblib==1.6.0 --hash=sha256:3dbbf9f6e4b592a2357b854608e980fe6390d131d7a82f011a377ef2ebef7aba
+mock==5.2.0 --hash=sha256:7ba87f72ca0e915175596069dbbcc7c75af7b5e9b9bc107ad6349ede0819982f
+numpy==2.5.4 --hash=sha256:8b4d2fd2d34e5f8c9235ee787de5631a37a28402b15cb80814df973d2be54129
+PyYAML==6.0.3 --hash=sha256:79005a0d97d5ddabfeeea4cf676af11e647e41d81c9a7722a193022accdb6b7c
+regex==2026.9.29 --hash=sha256:61956f074ecd123f55adca68ee3eab46e6a07ad3f8e64e6db95dfacb444f55c4
+sacremoses==0.2.0 --hash=sha256:d413d118486b3a449f829566b3759a4b33bbc56b12496369316b52708585f594
+sentencepiece==0.2.2 --hash=sha256:74f0ee601047c0c12a783088b51be4e6214a62ecd9e02278c477433cd16e0ed9
+setuptools==84.0.0 --hash=sha256:51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670
+subword-nmt==0.3.8 --hash=sha256:d22526b557752f35ac15e8ea384ea7773e50a51d966b8752d023d16cb87eac36
+tqdm==4.70.1 --hash=sha256:c293e525e6fef9c20e8728fd4612df02a0aa31bb5fe91ecd93e123b1b7bffa73
