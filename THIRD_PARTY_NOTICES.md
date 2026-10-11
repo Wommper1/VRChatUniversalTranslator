@@ -4,7 +4,7 @@ The portable app includes upstream license files in `licenses/`. OpenVR C# bindi
 
 - NAudio: MIT — https://github.com/naudio/NAudio
 - Whisper.net 1.9.1 and whisper.cpp: MIT — https://github.com/sandrohanea/whisper.net and https://github.com/ggml-org/whisper.cpp
-- sherpa-onnx 1.13.5: Apache-2.0 — https://github.com/k2-fsa/sherpa-onnx
+- sherpa-onnx 1.13.8: Apache-2.0 — https://github.com/k2-fsa/sherpa-onnx
 - ONNX Runtime, included by sherpa-onnx: MIT — https://github.com/microsoft/onnxruntime
 - OpenVR 2.15.6: Valve BSD-style license — https://github.com/ValveSoftware/openvr
 - Microsoft .NET / ASP.NET / Windows Desktop runtime: accompanying Microsoft runtime notices apply.
