@@ -68,7 +68,7 @@ Download the new ZIP, extract it to a new folder, and run it. Your settings, dow
 
 ## Help and bug reports
 
-Open an issue on this repository and fill in the template. For a security problem, follow [SECURITY.md](SECURITY.md) instead of opening a public issue.
+Open an issue on this repository and fill in the template. For a security problem, follow [SECURITY.md](SECURITY.md) instead of opening a public issue. Everyone taking part is expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 ## Build from source
 
 You need Windows 11 x64 and the [.NET SDK](https://dotnet.microsoft.com/download/dotnet) version in `global.json`. No CMake or C++ compiler is required; Whisper.net's packaged native CPU runtime is used.

@@ -2,6 +2,8 @@
 
 Thanks for helping. This is a small, local-first Windows app, so a few ground rules keep it that way.
 
+Be kind and assume good faith. Everyone taking part is expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ## What the project will and will not do
 
 - **Local first.** Captions and translation run on the user's PC. No telemetry, no accounts, no cloud services of its own, no paid APIs.
