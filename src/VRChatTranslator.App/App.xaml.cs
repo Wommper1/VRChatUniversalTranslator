@@ -1,14 +1,18 @@
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using VRChatTranslator.Core.Models;
+using VRChatTranslator.Core.Services;
 using VRChatTranslator.App.Services;
 
 namespace VRChatTranslator.App;
 
 public partial class App : Application
 {
+    private const string SingleInstanceName = "TheLevelEverythingCompany.VRChatUniversalTranslator";
     private readonly DiagnosticLog _log = new();
+    private SingleInstanceGuard? _singleInstance;
 
     protected override async void OnStartup(StartupEventArgs e)
     {
@@ -39,10 +43,36 @@ public partial class App : Application
             return;
         }
 
+        // One copy per Windows session: a second launch shows the first copy and exits. Two copies would each
+        // capture and transcribe the same VRChat audio, doubling CPU use and delay.
+        _singleInstance = new SingleInstanceGuard(SingleInstanceName);
+        if (!_singleInstance.TryBecomePrimary())
+        {
+            _ = AllowSetForegroundWindow(-1);
+            _singleInstance.NotifyPrimary();
+            _singleInstance.Dispose();
+            _singleInstance = null;
+            Shutdown(0);
+            return;
+        }
+
+        _singleInstance.WatchForSecondLaunch(() => Dispatcher.InvokeAsync(() => (MainWindow as MainWindow)?.BringToFront()));
         var window = new MainWindow();
         MainWindow = window;
         window.Show();
     }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        _singleInstance?.Dispose();
+        base.OnExit(e);
+    }
+
+    /// <summary>Lets the copy that was already running take focus when the user opens the app a second time.</summary>
+    [LibraryImport("user32.dll")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool AllowSetForegroundWindow(int processId);
 
     private async void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
     {

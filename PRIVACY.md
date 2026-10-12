@@ -38,7 +38,7 @@ Everything is downloaded into `%LOCALAPPDATA%\TheLevelEverythingCompany\VRChatUn
 - `config.json`: your settings (language, caption look, shortcuts, word corrections, recognition hints). No captions, no audio.
 - `models\`: the downloaded speech and speaker models.
 - `translation\`: the isolated Python runtime and language packs, if you set them up.
-- `logs\`: a small daily diagnostic log (start/stop, errors, performance numbers). It never contains caption text or audio. Logs older than 14 days are deleted automatically and one day's log stops growing at 5 MB.
+- `logs\`: a small daily diagnostic log (start/stop, errors, performance numbers, which shortcut or tray action was used, and the mode and language codes you applied). It never contains caption text, audio, your vocabulary or your corrections. Logs older than 14 days are deleted automatically and one day's log stops growing at 5 MB.
 
 Deleting that folder removes everything the app has stored.
 

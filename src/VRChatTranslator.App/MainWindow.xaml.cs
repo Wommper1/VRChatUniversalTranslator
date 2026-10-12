@@ -38,6 +38,7 @@ public partial class MainWindow : Window
     private AudioCaptureState? _lastLoggedCaptureState;
     private SpeechPipelineState? _lastLoggedSpeechState;
     private int _performanceLogSamples;
+    private bool _modelNoticeShown;
 
     public MainWindow(bool skipLifecycleCleanup = false)
     {
@@ -320,6 +321,33 @@ public partial class MainWindow : Window
         {
             await _speech.StopAsync();
         }
+
+        ShowFirstRunModelNotice(capture);
+    }
+
+    /// <summary>
+    /// With no speech model installed, listening produces no captions and nothing else says why. Once per listening session,
+    /// log it and open Settings, where the download button is. The Live header already explains it on every tab.
+    /// </summary>
+    private void ShowFirstRunModelNotice(AudioCaptureSnapshot capture)
+    {
+        var mode = GetEffectiveModelMode();
+        if (capture.State != AudioCaptureState.Capturing || _modelManager.IsModelInstalled(mode))
+        {
+            _modelNoticeShown = false;
+            return;
+        }
+
+        if (_modelNoticeShown)
+        {
+            return;
+        }
+
+        _modelNoticeShown = true;
+        var fileName = Path.GetFileName(_modelManager.GetModelPath(mode));
+        _ = _log.WriteAsync("SPEECH", $"Speech model {fileName} is not installed, so there are no captions yet. Settings, DOWNLOAD SELECTED MODEL, fixes it.");
+        _viewModel.OperationStatus = "No speech model installed yet. Click DOWNLOAD SELECTED MODEL below; captions start when it finishes.";
+        MainTabs.SelectedItem = SettingsTab;
     }
 
     private void OnSpeechStateChanged(object? sender, SpeechPipelineChangedEventArgs e)
@@ -476,6 +504,8 @@ public partial class MainWindow : Window
         {
             await _modelManager.DownloadModelAsync(effectiveMode, progress);
             SetSelectedModelAvailability();
+            _viewModel.OperationStatus = "Speech model downloaded and verified. Captions start as soon as VRChat audio is being captured.";
+            _ = _log.WriteAsync("SPEECH", $"Speech model {Path.GetFileName(_modelManager.GetModelPath(effectiveMode))} downloaded and verified.");
             await ReconcileSpeechAsync(_audioCapture.Current);
         }
         catch (Exception exception)
@@ -558,7 +588,7 @@ public partial class MainWindow : Window
     {
         var effectiveMode = GetEffectiveModelMode();
         var path = _modelManager.GetModelPath(effectiveMode);
-        _viewModel.SetModelAvailability(_modelManager.IsModelInstalled(effectiveMode), Path.GetFileName(path));
+        _viewModel.SetModelAvailability(_modelManager.IsModelInstalled(effectiveMode), Path.GetFileName(path), _modelManager.GetExpectedBytes(effectiveMode));
     }
 
     private async Task TryCleanupAsync(string service, Func<Task> cleanup)

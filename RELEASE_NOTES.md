@@ -1,3 +1,12 @@
+# Unreleased — first-run help, one copy at a time, clearer logs
+
+Found in the first real-world test of 1.1.1 on a Windows PC with VRChat (see [VERIFICATION.md](VERIFICATION.md)).
+
+- **First run no longer looks broken.** A fresh install has no speech model, so listening used to say "Listening to VRChat only" while nothing could be captioned. Now, with no model installed, the header on every tab says so and says where to click, the first listening session opens Settings at **DOWNLOAD SELECTED MODEL**, and captions start by themselves when the download finishes.
+- **One copy at a time.** Starting the app a second time now shows the copy that is already running instead of starting another. In the test, three copies ran at once and two of them transcribed the same VRChat audio, which pushed the PC to 91% CPU.
+- **Clearer diagnostic log**, still with no caption text or audio: which shortcut or tray action ran, the mode and language codes applied (never vocabulary or corrections), and when the speech model is missing or has been downloaded.
+- Two new automated checks (53 in total) and extra checks in the WPF smoke test. The README and QUICK_START now say plainly that the speech model must be downloaded first.
+
 # 1.1.1 — library updates
 
 - Updated NAudio.Wasapi (audio capture) from 3.0.1 to 3.1.0 and sherpa-onnx (optional speaker labels) from 1.13.5 to 1.13.8. These are maintenance updates. The parts of each library the app uses behaved identically in every test, including the real audio-capture test; see [VERIFICATION.md](VERIFICATION.md).

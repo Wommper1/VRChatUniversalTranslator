@@ -4,7 +4,7 @@ Live captions and English translation for VRChat, running entirely on your own W
 
 It listens to the audio that `VRChat.exe` plays (never your microphone), turns speech into text with a local Whisper model, translates it to English, and shows the captions in a click-through desktop overlay, on a SteamVR dashboard overlay, and, if you switch it on, on a phone on your home network.
 
-> **Status: version 1.1.1, early release.** The build, 51 automated checks, the startup smoke test and the phone-server self-test pass. Live VRChat sessions, a physical SteamVR headset, and a physical phone have **not** yet been through a full acceptance run, so the SteamVR overlay, speaker labels and phone display are best treated as experimental. [VERIFICATION.md](VERIFICATION.md) lists exactly what was and was not tested.
+> **Status: version 1.1.1, early release.** The build, 53 automated checks (the published 1.1.1 build had 51), the startup smoke test and the phone-server self-test pass. Live VRChat sessions, a physical SteamVR headset, and a physical phone have **not** yet been through a full acceptance run, so the SteamVR overlay, speaker labels and phone display are best treated as experimental. [VERIFICATION.md](VERIFICATION.md) lists exactly what was and was not tested.
 
 ## Why it is safe to run
 
@@ -37,8 +37,8 @@ You do not need to build anything.
    ```
    The hash must match the line for that file in `SHA256SUMS.txt`.
 3. Extract the whole ZIP to a folder and keep the files together. The build is self-contained; no separate .NET install is needed.
-4. Double-click `VRChatUniversalTranslator.exe`. The app is not code-signed, so Windows SmartScreen may show "Windows protected your PC" the first time; use **More info**, then **Run anyway**, only after the hash matches.
-5. In **Settings**, choose **Balanced** and download its speech model once (about 148 MB). After that, captioning works offline.
+4. Double-click `VRChatUniversalTranslator.exe`. The app is not code-signed, so Windows SmartScreen may show "Windows protected your PC" the first time; use **More info**, then **Run anyway**, only after the hash matches. Microsoft Defender may also check an unfamiliar program in the cloud for a moment the first time; that is expected for new software and is not a detection.
+5. **Download the speech model before expecting captions.** In **Settings**, choose **Balanced** and click **DOWNLOAD SELECTED MODEL** once (about 148 MB). Until you do, listening produces no captions. After that, captioning works offline.
 
 Requirements: Windows 11 x64, and the Microsoft Visual C++ 2015-2022 x64 Redistributable (normally already installed on gaming PCs). `VRChat.exe` is needed only for live use.
 
@@ -46,7 +46,7 @@ Start with [QUICK_START.md](QUICK_START.md).
 
 ## Everyday use
 
-1. Start VRChat, then start the app.
+1. Start VRChat, then start the app (one copy at a time).
 2. Confirm the detected VRChat process and choose a mode. Balanced is the default; other modes offer their own model download when selected.
 3. Click **Start Listening**. The model detects the language and translates to English locally.
 4. Optionally click **Start Phone Display** and open the displayed link on a phone on the same private network. The link carries a six-digit PIN that is new each time; the server refuses other networks and wrong PINs, is read-only, and stops when the app exits. It uses plain HTTP, so use it only on a network you trust.

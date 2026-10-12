@@ -41,6 +41,9 @@ public sealed class LocalWhisperModelManager
         return File.Exists(path) && new FileInfo(path).Length == GetDefinition(mode).ExpectedBytes;
     }
 
+    /// <summary>The published size of the model a mode uses, so the UI can say how big the one-time download is.</summary>
+    public long GetExpectedBytes(PerformanceMode mode) => GetDefinition(mode).ExpectedBytes;
+
     public Task<string> DownloadBalancedModelAsync(
         IProgress<ModelDownloadProgress>? progress = null,
         CancellationToken cancellationToken = default) =>

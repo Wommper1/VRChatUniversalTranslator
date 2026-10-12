@@ -44,6 +44,9 @@ public partial class OverlayWindow : Window
     public bool IsClickThrough => _clickThrough;
     public bool LockShortcutRegistered { get; private set; }
 
+    /// <summary>Optional (category, message) sink for the diagnostic log; messages never contain caption text.</summary>
+    public Action<string, string>? Diagnostics { get; set; }
+
     public void ShowCaption(CaptionEvent caption, double durationSeconds = 6)
     {
         ArgumentNullException.ThrowIfNull(caption);
@@ -137,6 +140,7 @@ public partial class OverlayWindow : Window
         if (message == HotkeyMessage && wParam.ToInt32() == HotkeyId)
         {
             SetClickThrough(!_clickThrough);
+            Diagnostics?.Invoke("SHORTCUT", $"Lock / unlock overlay (Ctrl+Alt+O): now {(_clickThrough ? "locked" : "unlocked")}");
             handled = true;
         }
 

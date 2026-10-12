@@ -2,6 +2,28 @@
 
 This records what was actually run and what was not. It is not a claim of bug-free or fully hardware-accepted software; see "Not verified" below.
 
+## Real-world session, 2026-10-12
+
+First run of the released 1.1.1 ZIP on a real Windows 11 PC with VRChat (CPU only, SteamVR not running, so no headset captions). The tester downloaded the ZIP from the Releases page in a web browser, as any user would. Results the author checked in the app's own diagnostic log or on disk are marked "log"; results the tester reported are marked "reported".
+
+| Check | Result |
+| --- | --- |
+| Download | Size 97,688,878 bytes; SHA-256 equal to the line in the published `SHA256SUMS.txt` (checked on disk) |
+| First launch | Windows showed its unfamiliar-program prompt and Microsoft Defender ran a cloud check, sending the executable for analysis. Defender recorded no detection (checked in its history). Reported by the tester as the first-launch experience |
+| Speech model download | The in-app download of the Balanced model (about 148 MB) and, later, the Accurate model (about 488 MB) completed; both files match the pinned size and SHA-256 (checked on disk) |
+| Live captions from VRChat's audio | Worked in a lobby with many people; the speech engine loaded the model and transcribed continuously (log) |
+| Delay from speech to caption, as the app's own reading (log) | Balanced: about 2.1 to 2.3 s typical, with one 8.2 s reading in the first minute while the model warmed up. Accurate: median 6.1 s, range 4.8 to 9.9 s, too slow for conversation on this PC |
+| Load while captioning (log) | Balanced: translator CPU about 24 to 27% (0.3% idle), memory 340 to 570 MB. Accurate: CPU average 25%, memory up to 976 MB |
+| Settings saved and reloaded | A mode saved with **Apply & save settings** was loaded again after a restart (log: the next start reported the saved mode) |
+| Global shortcuts with VRChat in front | Ctrl+Alt+L, Ctrl+Alt+P, Ctrl+Alt+H and Ctrl+Alt+O worked (reported). The log showed four start/stop changes with clean restarts of capture and speech, and no errors |
+| Errors | No error, fault or crash line in any session that evening (log) |
+
+Problems found, now fixed in the unreleased changes (see [RELEASE_NOTES.md](RELEASE_NOTES.md)): with no speech model installed, the app said it was listening while no captions could appear and did not say why; and starting the app several times ran several copies at once (three copies ran, two of them transcribing the same audio, and system CPU use reached 91%).
+
+The fixes were checked by the build (0 warnings, 0 errors, Release and Debug), the 53 automated checks, the WPF smoke test (whose desktop checks now cover the first-run header and a real hotkey press written to the log) and the phone self-test, all passing. Each new check was also broken on purpose and confirmed to fail. A real run of the new build started three times left exactly one copy running, and the second and third launches exited within a fraction of a second.
+
+Not covered by this session: caption accuracy and false captions were not scored, language labels and other languages were not tested, and the tray menu, the shortcut-conflict message and close-to-tray were only reported as working. SteamVR headset captions, typed replies to the VRChat chatbox, the phone display on a physical phone, output language packs and speaker labels were not run.
+
 ## Release 1.1.1, 2026-10-11
 
 1.1.1 changes two libraries and nothing else in the app: NAudio.Wasapi 3.0.1 to 3.1.0 (audio capture) and sherpa-onnx 1.13.5 to 1.13.8 (optional speaker labels). NAudio 3.1.0's release notes list two breaking API changes (`WaveFormat` marshalling and the `IsFormatSupported` return type); the app uses neither. Each update was tested alone and then together, against the same tests, on the same PC:
@@ -109,8 +131,8 @@ The items below are covered step by step in [ACCEPTANCE_CHECKLIST.md](ACCEPTANCE
 - **Native SteamVR captions and dashboard controls** — never run with a physical headset. Experimental.
 - **Speaker labels** — off by default; the speaker pipeline checks (`--speaker-test`) and the real-audio pipeline check (`--pipeline-test`) were not re-run because the model and fixtures are not on this PC.
 - **Process-only capture proof** (`--capture-proof`) — plays audible tones through Windows; not run.
-- **Real-VRChat latency and false-caption behavior** with 1.1.0 — the earlier 1.0 real-VRChat test is not evidence for the new features.
-- **Global shortcuts and tray behavior while VRChat has focus** — not exercised.
+- **False-caption behavior and caption accuracy** in real VRChat — latency was measured on 2026-10-12 (see above) but accuracy and false captions were not scored.
+- **Tray menu behavior while VRChat has focus** — the four global shortcuts were exercised on 2026-10-12; the tray menu, the shortcut-conflict message and close-to-tray were only reported as working.
 - **Explicit OSC reply sending** to a live VRChat session.
 - Phone display on a physical phone through the router/firewall.
 

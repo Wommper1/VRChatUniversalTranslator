@@ -1,18 +1,18 @@
 # Release status — VRChat Universal Translator 1.1.1
 
-Updated: 2026-10-11
+Updated: 2026-10-12
 
 ## Where things stand
 
 - The repository is public, MIT-licensed (Copyright 2026 The Level Everything Company), with README, SECURITY, CONTRIBUTING, a code of conduct, issue forms, a pull-request template, a CI workflow and Dependabot.
 - Release **1.1.0** is published as a **pre-release**. Release **1.1.1** carries the NAudio.Wasapi and sherpa-onnx updates and nothing else; see [RELEASE_NOTES.md](RELEASE_NOTES.md).
-- What was tested for 1.1.1, and what was not, is in [VERIFICATION.md](VERIFICATION.md).
+- What was tested for 1.1.1, and what was not, is in [VERIFICATION.md](VERIFICATION.md). A first real-world session on 2026-10-12 found two problems (no guidance when the speech model is missing, and several copies able to run at once). Their fixes are on `main` and listed as "Unreleased" in [RELEASE_NOTES.md](RELEASE_NOTES.md); they are not in a published ZIP yet.
 - The portable ZIP contains the app, README, QUICK_START, PRIVACY, SECURITY, RELEASE_NOTES, THIRD_PARTY_NOTICES, VERIFICATION, LICENSE and the third-party `licenses\` folder. It contains no settings, models, logs or keys, and the DLLs and symbol files do not embed the local path of whoever built them.
 - `artifacts/` is git-ignored on purpose: the ZIP is attached to a GitHub Release, never committed. Its SHA-256 is published in `SHA256SUMS.txt` beside it, not recorded in this file.
 
 ## Not yet done (say so on every release)
 
-- **Real-world acceptance.** Live VRChat captioning, the SteamVR headset overlay, OSC replies, shortcuts while VRChat has focus, and a physical phone through the router and firewall have not been run. Use `ACCEPTANCE_CHECKLIST.md` in one 60-90 minute session. Until then, publish releases as **pre-releases**.
+- **Real-world acceptance, partly done.** On 2026-10-12 live VRChat captioning, the model download, the four global shortcuts, saved settings and the app's load were checked on a real PC (see [VERIFICATION.md](VERIFICATION.md)). Still not run: the SteamVR headset overlay, OSC replies to a live chatbox, a physical phone through the router and firewall, caption accuracy and false captions, other languages, language packs and speaker labels. Use `ACCEPTANCE_CHECKLIST.md` for those. Until they are done, publish releases as **pre-releases**.
 - **Code signing.** The executable is unsigned, so Windows SmartScreen may warn. The hash in `SHA256SUMS.txt` is the user's check.
 - **Independent security testing.** None has been done.
 

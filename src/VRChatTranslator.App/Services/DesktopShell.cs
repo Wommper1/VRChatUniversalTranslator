@@ -12,18 +12,20 @@ public sealed partial class DesktopShell : IDisposable
 {
     private readonly Forms.NotifyIcon _tray;
     private readonly HwndSource _source;
-    private readonly Dictionary<int, Action> _actions = [];
+    private readonly Dictionary<int, (string Name, string Gesture, Action Run)> _actions = [];
     private readonly Action _toggleListening, _pause, _visibility;
+    private readonly Action<string, string>? _log;
     private readonly IntPtr _handle;
 
-    public DesktopShell(Window window, Action show, Action settings, Action toggleListening, Action pause, Action visibility, Action quit)
+    /// <param name="log">Optional (category, message) sink for the diagnostic log. Messages name the action and key, never captions.</param>
+    public DesktopShell(Window window, Action show, Action settings, Action toggleListening, Action pause, Action visibility, Action quit, Action<string, string>? log = null)
     {
-        _toggleListening = toggleListening; _pause = pause; _visibility = visibility;
+        _toggleListening = toggleListening; _pause = pause; _visibility = visibility; _log = log;
         _handle = new WindowInteropHelper(window).Handle;
         _source = HwndSource.FromHwnd(_handle) ?? throw new InvalidOperationException("Window handle not ready.");
         _source.AddHook(WindowProcedure);
         var menu = new Forms.ContextMenuStrip();
-        void Add(string label, Action action) => menu.Items.Add(label, null, (_, _) => window.Dispatcher.InvokeAsync(action));
+        void Add(string label, Action action) => menu.Items.Add(label, null, (_, _) => window.Dispatcher.InvokeAsync(() => { _log?.Invoke("TRAY", label); action(); }));
         Add("Open translator", show); Add("Settings", settings); Add("Start / stop listening", toggleListening);
         Add("Pause / resume", pause); Add("Show / hide captions", visibility); Add("Quit", quit);
         _tray = new Forms.NotifyIcon { Icon = LoadAppIcon(), Text = "VRChat Translator · stopped", ContextMenuStrip = menu, Visible = true };
@@ -48,9 +50,14 @@ public sealed partial class DesktopShell : IDisposable
         foreach (var oldId in _actions.Keys) UnregisterHotKey(_handle, oldId);
         _actions.Clear();
         List<string> failures = [];
-        var choices = new[] { (settings.ListeningShortcut, _toggleListening), (settings.PauseShortcut, _pause), (settings.VisibilityShortcut, _visibility) };
+        var choices = new[]
+        {
+            ("Start / stop listening", settings.ListeningShortcut, _toggleListening),
+            ("Pause / resume", settings.PauseShortcut, _pause),
+            ("Show / hide captions", settings.VisibilityShortcut, _visibility)
+        };
         var id = 0x5200;
-        foreach (var (text, action) in choices)
+        foreach (var (name, text, action) in choices)
         {
             id++;
             try
@@ -64,16 +71,23 @@ public sealed partial class DesktopShell : IDisposable
                 if (gesture.Modifiers.HasFlag(ModifierKeys.Shift)) modifiers |= 4;
                 if (gesture.Modifiers.HasFlag(ModifierKeys.Windows)) modifiers |= 8;
                 if (!RegisterHotKey(_handle, id, modifiers, (uint)KeyInterop.VirtualKeyFromKey(gesture.Key))) failures.Add(text);
-                else _actions.Add(id, action);
+                else _actions.Add(id, (name, text, action));
             }
             catch (Exception ex) when (ex is FormatException or NotSupportedException or ArgumentException) { failures.Add(text); }
         }
-        return failures.Count == 0 ? "Shortcuts ready" : $"Shortcut conflict or invalid key: {string.Join(", ", failures)}. Choose another Ctrl/Alt combination; tray controls still work.";
+        if (failures.Count == 0) return "Shortcuts ready";
+        _log?.Invoke("SETTINGS", $"Shortcut conflict or invalid key: {string.Join(", ", failures)}.");
+        return $"Shortcut conflict or invalid key: {string.Join(", ", failures)}. Choose another Ctrl/Alt combination; tray controls still work.";
     }
 
     private IntPtr WindowProcedure(IntPtr hwnd, int message, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
-        if (message == 0x0312 && _actions.TryGetValue(wParam.ToInt32(), out var action)) { action(); handled = true; }
+        if (message == 0x0312 && _actions.TryGetValue(wParam.ToInt32(), out var entry))
+        {
+            _log?.Invoke("SHORTCUT", $"{entry.Name} ({entry.Gesture})");
+            entry.Run();
+            handled = true;
+        }
         return IntPtr.Zero;
     }
 

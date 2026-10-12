@@ -2,7 +2,7 @@
 
 1. Extract the entire portable ZIP to a folder. Double-click `VRChatUniversalTranslator.exe`.
 2. Start VRChat. On **Live**, leave spoken language on **Auto-detect**, or lock it to the language being spoken. Choose **English** as output for the simplest setup.
-3. In **Settings**, choose **Balanced** and download its model if prompted. Return to **Live**, click **Apply**, then **Start Listening**.
+3. **First run only: download the speech model.** A fresh install has no speech model, so no captions can appear until you get one. In **Settings**, choose **Balanced** and click **DOWNLOAD SELECTED MODEL** (about 148 MB, once). Wait until the line above the button says the model is installed. The app checks the file before using it. Then return to **Live**, click **Apply**, then **Start Listening**. If you start listening first, nothing is wrong: the model status in Settings just says "required" until you download it.
 4. Use **Settings → Caption comfort** for text size, background, duration, and a preview. Unlock the overlay to drag/resize it; lock again to click through it. Very long captions can be scrolled while unlocked. History keeps the last 100 captions, in memory only.
 
 ## Faster and clearer captions
@@ -44,4 +44,4 @@ Download the optional speaker model in Settings, then enable **Optional speaker 
 
 Preferences and models: `%LOCALAPPDATA%\TheLevelEverythingCompany\VRChatUniversalTranslator`. No transcript or audio file is automatically saved. **Advanced → Save 10 second audio test** saves audio only after you explicitly choose a destination. The existing optional phone display is in Advanced; leave it off if unused. Open the link it shows (it includes a PIN that is new every time) on a phone on the same Wi-Fi. Never forward its port, and do not use it on public Wi-Fi.
 
-For missing models use the download buttons. For off-screen captions use **Reset placement**. For a conflicting shortcut choose a different key. If a setting file is damaged the app falls back to safe defaults. For slow captions inspect Advanced's inference, queue, and end-to-caption timings. See `VERIFICATION.md` for tested limits and remaining real-VR checks.
+If listening shows no captions, check the model status in Settings first. Run only one copy of the app at a time: two copies would each process the same VRChat audio and slow everything down. For missing models use the download buttons. For off-screen captions use **Reset placement**. For a conflicting shortcut choose a different key. If a setting file is damaged the app falls back to safe defaults. For slow captions inspect Advanced's inference, queue, and end-to-caption timings. See `VERIFICATION.md` for tested limits and remaining real-VR checks.

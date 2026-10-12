@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using VRChatTranslator.App.Services;
@@ -28,16 +29,27 @@ public partial class MainWindow
         StateChanged += (_, _) => { if (!_skipLifecycleCleanup && WindowState == WindowState.Minimized && _viewModel.MinimizeToTray) Hide(); };
     }
 
+    private void WriteDiagnostic(string category, string message) => _ = _log.WriteAsync(category, message);
+
     private void StartDesktopShell()
     {
+        _overlay.Diagnostics = WriteDiagnostic;
         _shell = new DesktopShell(this, RestoreMainWindow, () => { RestoreMainWindow(); MainTabs.SelectedItem = SettingsTab; },
             () => OnToggleCaptureClick(this, new RoutedEventArgs()), () => OnPauseClick(this, new RoutedEventArgs()),
-            () => OnToggleOverlayClick(this, new RoutedEventArgs()), () => { _explicitQuit = true; Close(); });
+            () => OnToggleOverlayClick(this, new RoutedEventArgs()), () => { _explicitQuit = true; Close(); }, WriteDiagnostic);
         _viewModel.OperationStatus = _shell.Configure(_settings);
         if (!_overlay.LockShortcutRegistered) _viewModel.OperationStatus += " · Ctrl+Alt+O is in use. Use the Settings lock button.";
     }
 
     private void RestoreMainWindow() { Show(); WindowState = WindowState.Normal; Activate(); }
+
+    /// <summary>Called when the user starts the app a second time: show this copy instead of running two.</summary>
+    internal void BringToFront()
+    {
+        if (_cleanupStarted) return;
+        RestoreMainWindow();
+        WriteDiagnostic("STARTUP", "A second launch was ignored; this copy was brought to the front.");
+    }
 
     private void OnDesktopPreferenceChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -76,6 +88,8 @@ public partial class MainWindow
             _reconfiguring = false;
             await ReconcileSpeechAsync(_audioCapture.Current);
             _viewModel.OperationStatus = $"Saved · {(_settings.SourceLanguage == "auto" ? "auto-detect" : "source locked to " + _viewModel.SourceLanguage.Name)} · {shortcutStatus} {preloadStatus}";
+            // Only mode and language codes: never the vocabulary or corrections, which can hold names.
+            _ = _log.WriteAsync("SETTINGS", $"Applied and saved: mode={_selectedMode}; source={_settings.SourceLanguage}; target={_settings.TargetLanguage}; {shortcutStatus.Trim()}.");
         }
         catch (Exception ex) { _viewModel.OperationStatus = $"Could not apply settings: {ex.Message}"; }
         finally { _reconfiguring = false; _preferencesGate.Release(); }
@@ -236,9 +250,38 @@ public partial class MainWindow
         _overlay.Show();
         _overlay.ShowCaption(new(DateTimeOffset.UtcNow, "ja", "Japanese", string.Concat(Enumerable.Repeat("こんにちは、世界。", 12)), string.Join(" ", Enumerable.Repeat("Long caption wrapping test", 12)), 1, TimeSpan.Zero));
         Require(_overlay.Height > 180, "Long bilingual captions must grow instead of clipping at the default height.");
-        using var shell = new DesktopShell(this, () => { }, () => { }, () => { }, () => { }, () => { }, () => { });
+        List<string> shellLog = [];
+        var listeningToggled = 0;
+        using var shell = new DesktopShell(this, () => { }, () => { }, () => listeningToggled++, () => { }, () => { }, () => { },
+            (category, message) => shellLog.Add($"{category}: {message}"));
         var conflict = shell.Configure(new AppSettings { ListeningShortcut = "Ctrl+Alt+F10", PauseShortcut = "Ctrl+Alt+F10", VisibilityShortcut = "" });
         Require(conflict.Contains("conflict", StringComparison.OrdinalIgnoreCase), "Duplicate shortcuts must report a conflict.");
+        Require(shellLog.Any(line => line.StartsWith("SETTINGS: Shortcut conflict", StringComparison.Ordinal)), "A shortcut conflict must be written to the diagnostic log.");
+        shell.Configure(new AppSettings { ListeningShortcut = "Ctrl+Alt+F10", PauseShortcut = "Ctrl+Alt+F11", VisibilityShortcut = "" });
+        var hotkeyId = new IntPtr(0x5201);
+        _ = SendMessage(new System.Windows.Interop.WindowInteropHelper(this).Handle, 0x0312, hotkeyId, IntPtr.Zero);
+        Require(listeningToggled == 1, "A registered shortcut must run its action.");
+        Require(shellLog.Contains("SHORTCUT: Start / stop listening (Ctrl+Alt+F10)"), "A shortcut press must be written to the diagnostic log with the action and key, so a bug report can tell L from P.");
+
+        // First run: with no speech model installed, no tab may say "ready" or "listening" as if captions will appear.
+        _viewModel.SetModelAvailability(false, "ggml-base.bin", 147_951_465);
+        _viewModel.ApplyCapture(new AudioCaptureSnapshot { State = AudioCaptureState.Capturing, Mode = CaptureMode.VrchatProcessOnly });
+        Require(_viewModel.ListeningSummary == SpeechModelNotice.ListeningHeadline && _viewModel.ListeningDetail.Contains("DOWNLOAD SELECTED MODEL", StringComparison.Ordinal),
+            "While capturing with no speech model, the header must say captions need the model and where to download it.");
+        _viewModel.SetModelAvailability(true, "ggml-base.bin", 147_951_465);
+        Require(_viewModel.ListeningSummary == "Listening to VRChat only", "Once the model is installed the header must return to the normal listening text without a restart.");
+        _viewModel.ApplyCapture(new AudioCaptureSnapshot());
+        _viewModel.ApplyDetection(new(true, 4242, null, DateTimeOffset.UtcNow, null));
+        _viewModel.SetModelAvailability(false, "ggml-base.bin", 147_951_465);
+        Require(_viewModel.ListeningSummary == SpeechModelNotice.ReadyHeadline, "Before listening, a missing model must replace the 'ready to listen' text.");
+        _viewModel.SetModelAvailability(true, "ggml-base.bin", 147_951_465);
+        Require(_viewModel.ListeningSummary == "VRChat detected · ready to listen", "An installed model restores the normal 'ready to listen' text.");
+        _viewModel.ApplyDetection(new(false, null, null, DateTimeOffset.UtcNow, null));
+        SetSelectedModelAvailability();
         _overlay.Close();
     }
+
+    [LibraryImport("user32.dll", EntryPoint = "SendMessageW")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    private static partial IntPtr SendMessage(IntPtr window, uint message, IntPtr wParam, IntPtr lParam);
 }

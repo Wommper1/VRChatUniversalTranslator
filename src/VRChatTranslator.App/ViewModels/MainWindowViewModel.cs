@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using VRChatTranslator.Core.Models;
+using VRChatTranslator.Core.Services;
 using VRChatTranslator.App.Services;
 using VRChatTranslator.Core.Settings;
 using VRChatTranslator.Speech;
@@ -59,6 +60,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
     private double _customCaptionDelay;
     private int _customQueue = 3;
     private bool _customTranslation = true;
+    private bool _modelMissing;
+    private string _modelNoticeDetail = "";
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -322,8 +325,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         {
             VrchatStatusText = "Detected";
             VrchatProcessIdText = snapshot.ProcessId?.ToString() ?? "—";
-            ListeningSummary = "VRChat detected · ready to listen";
-            ListeningDetail = "Start Listening opens a process-only loopback stream for this VRChat PID and its child processes.";
+            ShowReadyToListen();
             DetectionDiagnostic = $"Running · PID {VrchatProcessIdText}";
             RefreshCaptureControls();
             return;
@@ -366,6 +368,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
                 ListeningSummary = "Opening VRChat-only audio…";
                 ListeningDetail = "Windows is activating a process-specific WASAPI loopback stream.";
                 break;
+            case AudioCaptureState.Capturing when _modelMissing:
+                ListeningSummary = SpeechModelNotice.ListeningHeadline;
+                ListeningDetail = _modelNoticeDetail;
+                break;
             case AudioCaptureState.Capturing:
                 ListeningSummary = "Listening to VRChat only";
                 ListeningDetail = "The meter and PCM queue contain audio from the selected VRChat process tree—not the microphone or system mix.";
@@ -375,8 +381,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
                 ListeningDetail = snapshot.LastError ?? "The VRChat process audio stream stopped unexpectedly.";
                 break;
             case AudioCaptureState.Stopped when IsVrchatDetected:
-                ListeningSummary = "VRChat detected · ready to listen";
-                ListeningDetail = "Start Listening opens a process-only loopback stream for this VRChat PID and its child processes.";
+                ShowReadyToListen();
                 break;
         }
         OnPropertyChanged(nameof(IsCaptureActive));
@@ -390,13 +395,42 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         CanSaveAudioTest = !isRunning && _captureSnapshot.State == AudioCaptureState.Capturing;
     }
 
-    public void SetModelAvailability(bool installed, string? modelFileName = null)
+    public void SetModelAvailability(bool installed, string? modelFileName = null, long expectedBytes = 0)
     {
         var profile = PresetRuntimeProfile.For(SelectedPreset.Mode);
         var fileName = modelFileName ?? profile.ModelFileName;
         SpeechModelStatus = installed ? $"{fileName} · installed" : $"{fileName} required";
         ModelButtonText = installed ? "MODEL INSTALLED" : "DOWNLOAD SELECTED MODEL";
         CanDownloadModel = !installed;
+        _modelMissing = !installed;
+        _modelNoticeDetail = SpeechModelNotice.NeededDetail(fileName, expectedBytes);
+        RefreshModelDependentText();
+    }
+
+    /// <summary>The header on every tab must not say "ready" or "listening" as if captions will appear when no speech model is installed.</summary>
+    private void ShowReadyToListen()
+    {
+        ListeningSummary = _modelMissing ? SpeechModelNotice.ReadyHeadline : "VRChat detected · ready to listen";
+        ListeningDetail = _modelMissing
+            ? _modelNoticeDetail
+            : "Start Listening opens a process-only loopback stream for this VRChat PID and its child processes.";
+    }
+
+    private void RefreshModelDependentText()
+    {
+        if (HasDetectionError || _captureSnapshot.State == AudioCaptureState.Faulted)
+        {
+            return;
+        }
+
+        if (_captureSnapshot.State == AudioCaptureState.Capturing)
+        {
+            ApplyCapture(_captureSnapshot);
+        }
+        else if (IsVrchatDetected && !_captureSnapshot.IsActive)
+        {
+            ShowReadyToListen();
+        }
     }
 
     public void SetModelDownloadProgress(double? percentage, string status)

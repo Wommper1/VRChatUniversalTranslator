@@ -119,7 +119,9 @@ internal static partial class Program
             ("old diagnostic logs are removed and other files are kept", OldDiagnosticLogsAreRemovedAndOthersKept),
             ("phone page allows only its own script and style, with safe headers", PhonePageAllowsOnlyItsOwnScriptAndStyle),
             ("PowerShell is started by its full path", PowerShellIsStartedByFullPath),
-            ("language pack extraction refuses entries that climb out of the folder", LanguagePackExtractionRefusesPathTraversal)
+            ("language pack extraction refuses entries that climb out of the folder", LanguagePackExtractionRefusesPathTraversal),
+            ("a second launch is refused and the first copy is told to show itself", SecondLaunchIsRefusedAndTheFirstCopyIsToldToShow),
+            ("the first-run notice says where to click and how big the model is", FirstRunNoticeSaysWhereToClickAndHowBig)
         ];
 
         var failures = 0;
