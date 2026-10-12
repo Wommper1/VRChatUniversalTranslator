@@ -1,12 +1,12 @@
-# Release status — VRChat Universal Translator 1.1.1
+# Release status — VRChat Universal Translator 1.1.2
 
 Updated: 2026-10-12
 
 ## Where things stand
 
 - The repository is public, MIT-licensed (Copyright 2026 The Level Everything Company), with README, SECURITY, CONTRIBUTING, a code of conduct, issue forms, a pull-request template, a CI workflow and Dependabot.
-- Release **1.1.0** is published as a **pre-release**. Release **1.1.1** carries the NAudio.Wasapi and sherpa-onnx updates and nothing else; see [RELEASE_NOTES.md](RELEASE_NOTES.md).
-- What was tested for 1.1.1, and what was not, is in [VERIFICATION.md](VERIFICATION.md). A first real-world session on 2026-10-12 found two problems (no guidance when the speech model is missing, and several copies able to run at once). Their fixes are on `main` and listed as "Unreleased" in [RELEASE_NOTES.md](RELEASE_NOTES.md); they are not in a published ZIP yet.
+- Releases **1.1.0** and **1.1.1** are published as **pre-releases**. **1.1.2** is the next pre-release: it carries the fixes from the first real-world session (first-run help when the speech model is missing, one copy at a time, clearer logs); see [RELEASE_NOTES.md](RELEASE_NOTES.md).
+- What was tested, and what was not, is in [VERIFICATION.md](VERIFICATION.md). The 2026-10-12 real-world session ran 1.1.1; the problems it found are fixed in 1.1.2.
 - The portable ZIP contains the app, README, QUICK_START, PRIVACY, SECURITY, RELEASE_NOTES, THIRD_PARTY_NOTICES, VERIFICATION, LICENSE and the third-party `licenses\` folder. It contains no settings, models, logs or keys, and the DLLs and symbol files do not embed the local path of whoever built them.
 - `artifacts/` is git-ignored on purpose: the ZIP is attached to a GitHub Release, never committed. Its SHA-256 is published in `SHA256SUMS.txt` beside it, not recorded in this file.
 
@@ -28,7 +28,14 @@ The application remains truthfully CPU-only. GPU acceleration is a future engine
 6. Create the release: tag `vX.Y.Z` on that commit, tick **Set as a pre-release** until acceptance is done, attach the ZIP and `SHA256SUMS.txt`.
 7. Download the ZIP from the release page as a stranger would and check that its hash matches.
 
-## What changed since 1.1.0
+## What changed since 1.1.1
+
+- With no speech model installed, the app says so on every tab and opens Settings at the download button once per listening session (before, it said "Listening" while nothing could be captioned).
+- A second launch shows the running copy instead of starting another.
+- The diagnostic log records which shortcut or tray action ran, the mode and language codes applied, and model events (never caption text, audio, vocabulary or corrections).
+- Two new automated checks (53 in total), more WPF smoke-test checks, and documentation of the first real-world session.
+
+## What changed in 1.1.1 compared with 1.1.0
 
 - NAudio.Wasapi 3.0.1 to 3.1.0 and sherpa-onnx 1.13.5 to 1.13.8. Nothing else in the app.
 

@@ -1,6 +1,22 @@
-# Verification — versions 1.1.0 and 1.1.1
+# Verification — versions 1.1.0, 1.1.1 and 1.1.2
 
 This records what was actually run and what was not. It is not a claim of bug-free or fully hardware-accepted software; see "Not verified" below.
+
+## Release 1.1.2, 2026-10-12
+
+1.1.2 contains the fixes for the problems found in the real-world session below. It has no library updates. What was run on the build PC:
+
+| Check | Result |
+| --- | --- |
+| Debug and Release build, warnings as errors | 0 warnings, 0 errors |
+| Automated checks | 53/53 (51 in 1.1.1, plus 2 new) |
+| WPF `--smoke-test` and `--phone-self-test` | pass, both from source and from the extracted ZIP |
+| One-copy check with the extracted executable | the first copy started; two further launches each exited with code 0 in well under a second; exactly one copy stayed running and closed when asked |
+| Known-vulnerable packages | none |
+| Package contents | 656 files, as in 1.1.1. Compared file by file with the 1.1.1 package, only 16 differ: six documents and the app's own assemblies (which carry the version number). No third-party file changed |
+| Scan of every file in the package for a user name, machine path, repository path or source-link data | none in the app's own files. The only matches elsewhere are Microsoft's own build paths inside its libraries and the documented speaker-model download address, both present in 1.1.1 too |
+
+The 2026-10-12 real-world session below ran 1.1.1. The 1.1.2 fixes were checked by the automated checks, the smoke test and the one-copy check above, but not yet in a live VRChat session. The audio, speaker and speech code is unchanged since 1.1.1, so the real capture, speaker and Whisper checks recorded for 1.1.1 were not repeated.
 
 ## Real-world session, 2026-10-12
 
@@ -18,9 +34,9 @@ First run of the released 1.1.1 ZIP on a real Windows 11 PC with VRChat (CPU onl
 | Global shortcuts with VRChat in front | Ctrl+Alt+L, Ctrl+Alt+P, Ctrl+Alt+H and Ctrl+Alt+O worked (reported). The log showed four start/stop changes with clean restarts of capture and speech, and no errors |
 | Errors | No error, fault or crash line in any session that evening (log) |
 
-Problems found, now fixed in the unreleased changes (see [RELEASE_NOTES.md](RELEASE_NOTES.md)): with no speech model installed, the app said it was listening while no captions could appear and did not say why; and starting the app several times ran several copies at once (three copies ran, two of them transcribing the same audio, and system CPU use reached 91%).
+Problems found, fixed in 1.1.2 (see [RELEASE_NOTES.md](RELEASE_NOTES.md)): with no speech model installed, the app said it was listening while no captions could appear and did not say why; and starting the app several times ran several copies at once (three copies ran, two of them transcribing the same audio, and system CPU use reached 91%).
 
-The fixes were checked by the build (0 warnings, 0 errors, Release and Debug), the 53 automated checks, the WPF smoke test (whose desktop checks now cover the first-run header and a real hotkey press written to the log) and the phone self-test, all passing. Each new check was also broken on purpose and confirmed to fail. A real run of the new build started three times left exactly one copy running, and the second and third launches exited within a fraction of a second.
+The fixes were first checked on the source tree by the build (0 warnings, 0 errors, Release and Debug), the 53 automated checks, the WPF smoke test (whose desktop checks now cover the first-run header and a real hotkey press written to the log) and the phone self-test, all passing. Each new check was also broken on purpose and confirmed to fail. A real run of the new build started three times left exactly one copy running, and the second and third launches exited within a fraction of a second.
 
 Not covered by this session: caption accuracy and false captions were not scored, language labels and other languages were not tested, and the tray menu, the shortcut-conflict message and close-to-tray were only reported as working. SteamVR headset captions, typed replies to the VRChat chatbox, the phone display on a physical phone, output language packs and speaker labels were not run.
 

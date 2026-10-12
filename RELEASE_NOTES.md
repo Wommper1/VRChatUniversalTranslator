@@ -1,6 +1,6 @@
-# Unreleased — first-run help, one copy at a time, clearer logs
+# 1.1.2 — first-run help, one copy at a time, clearer logs
 
-Found in the first real-world test of 1.1.1 on a Windows PC with VRChat (see [VERIFICATION.md](VERIFICATION.md)).
+Found in the first real-world test of 1.1.1 on a Windows PC with VRChat (see [VERIFICATION.md](VERIFICATION.md)). Settings, downloaded models and language packs carry over unchanged. Everything that was not run in that test (SteamVR headset captions, typed replies to the VRChat chatbox, the phone display on a physical phone, language packs, speaker labels, caption accuracy) is still outstanding, so this is still a pre-release.
 
 - **First run no longer looks broken.** A fresh install has no speech model, so listening used to say "Listening to VRChat only" while nothing could be captioned. Now, with no model installed, the header on every tab says so and says where to click, the first listening session opens Settings at **DOWNLOAD SELECTED MODEL**, and captions start by themselves when the download finishes.
 - **One copy at a time.** Starting the app a second time now shows the copy that is already running instead of starting another. In the test, three copies ran at once and two of them transcribed the same VRChat audio, which pushed the PC to 91% CPU.

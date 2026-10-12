@@ -1,4 +1,4 @@
-# Real-world acceptance checklist — version 1.1.1
+# Real-world acceptance checklist — version 1.1.2
 
 The automated checks in [VERIFICATION.md](VERIFICATION.md) cannot cover anything that needs VRChat running, a headset, or a human listening. This checklist is for those. Work top to bottom in one session of about 60–90 minutes. Mark each item **Pass**, **Fail**, or **Skip** and write anything odd in Notes; a failure with a note is more useful than a quiet pass.
 
@@ -8,7 +8,7 @@ This document sets no latency or accuracy targets. Record what you measure and d
 
 ## 0. Setup (do first)
 
-- [ ] **Pick the build first.** Use the 1.1.1 portable ZIP from the Releases page (or 1.1.0, which behaves the same apart from two library versions). Earlier local builds from before 2026-10-09 lack the phone-display hardening and the (auto)/(locked) marker, so their section 4, 8.7–8.14 and section 11 results do not count. To test the current source instead, run `scripts\run.ps1`. Note that `scripts\build-release.ps1` overwrites the ZIP of the same version in `artifacts\`. Build used: ______
+- [ ] **Pick the build first.** Use the 1.1.2 portable ZIP from the Releases page. (1.1.1 and 1.1.0 behave the same apart from the first-run notice for a missing speech model, the one-copy guard and the extra log lines added in 1.1.2.) Earlier local builds from before 2026-10-09 lack the phone-display hardening and the (auto)/(locked) marker, so their section 4, 8.7–8.14 and section 11 results do not count. To test the current source instead, run `scripts\run.ps1`. Note that `scripts\build-release.ps1` overwrites the ZIP of the same version in `artifacts\`. Build used: ______
 - [ ] To test only the packaged release instead, extract the portable ZIP to a fresh folder (not the project folder) and launch `VRChatUniversalTranslator.exe`. Either way, the window opens with six tabs: Live, History, Replies, Settings, Headset, Advanced.
 - [ ] Settings → choose **Balanced**. On a first run there is no speech model, so click **DOWNLOAD SELECTED MODEL** and wait until it says installed; no captions can appear before that. Then **Apply & save settings**. Record whether the app made the missing model obvious. Result: ______
 - [ ] Pick a **private or friends-only instance** with at least one other person willing to talk, or a world with spoken audio you can replay. Do the OSC reply test (section 11) only with someone who knows it is coming.
@@ -174,7 +174,7 @@ Enable OSC in VRChat: Action Menu → Options → OSC.
 | 12 Privacy and data | | | | |
 | 13 Phone display | | | | |
 
-**Failures to fix before calling 1.1.1 accepted:** ______
+**Failures to fix before calling 1.1.2 accepted:** ______
 
 **Decision:** ☐ Accepted  ☐ Accepted with listed limitations  ☐ Not accepted
 
