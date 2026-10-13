@@ -1,3 +1,9 @@
+# Unreleased — fewer invented captions, preset saved on Apply
+
+- **Captions the recogniser invents from non-speech sound are dropped.** Whisper often "hears" the stock endings of online videos in noise ("Thanks for watching! Please subscribe and hit that like button!", "Welcome to my channel") or repeats one sentence in a loop. A caption made only of those stock phrases, or one sentence repeated three or more times, is no longer shown. A real sentence that merely contains such words is untouched. In a test with steady noise this removed all five invented captions; real speech results were identical across ten test crowds.
+- **Apply now saves the chosen performance mode.** Before, "Apply" and "Apply & save settings" saved everything except the selected mode (Balanced, Accurate...), which was only saved when the app closed, so a crash or a killed process lost it.
+- Development only, not in the app package: tools that measure caption accuracy and delay against fake crowds (see [VERIFICATION.md](VERIFICATION.md)).
+
 # 1.1.2 — first-run help, one copy at a time, clearer logs
 
 Found in the first real-world test of 1.1.1 on a Windows PC with VRChat (see [VERIFICATION.md](VERIFICATION.md)). Settings, downloaded models and language packs carry over unchanged. Everything that was not run in that test (SteamVR headset captions, typed replies to the VRChat chatbox, the phone display on a physical phone, language packs, speaker labels, caption accuracy) is still outstanding, so this is still a pre-release.

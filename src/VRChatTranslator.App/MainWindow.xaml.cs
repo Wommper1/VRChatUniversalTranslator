@@ -355,7 +355,7 @@ public partial class MainWindow : Window
         if (_lastLoggedSpeechState != e.Snapshot.State)
         {
             _lastLoggedSpeechState = e.Snapshot.State;
-            _ = _log.WriteAsync("SPEECH", $"State={e.Snapshot.State}; model={e.Snapshot.ModelName}; backend={e.Snapshot.Backend}; error={e.Snapshot.LastError ?? "none"}.");
+            _ = _log.WriteAsync("SPEECH", $"State={e.Snapshot.State}; model={e.Snapshot.ModelName}; backend={e.Snapshot.Backend}; voice={e.Snapshot.VoiceDetection}; error={e.Snapshot.LastError ?? "none"}.");
         }
 
         _ = Dispatcher.InvokeAsync(() =>

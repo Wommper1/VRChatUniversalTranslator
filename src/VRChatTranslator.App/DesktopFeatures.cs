@@ -77,7 +77,7 @@ public partial class MainWindow
         try
         {
             _settings = _viewModel.CaptureDesktopSettings(_settings);
-            _settings = _settings with { CustomMode = _viewModel.GetCustomSettings() };
+            _settings = _settings.WithRuntimeSelection(_selectedMode, _viewModel.GetCustomSettings());
             _overlay.ApplyPreferences(_settings.Overlay, _settings.ShowOriginalText);
             if (_settings.Overlay.Enabled) _overlay.Show(); else _overlay.Hide();
             _headset.SetVisible(_settings.Overlay.Enabled);

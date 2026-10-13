@@ -2,6 +2,25 @@
 
 This records what was actually run and what was not. It is not a claim of bug-free or fully hardware-accepted software; see "Not verified" below.
 
+## Crowd accuracy evaluation, 2026-10-13 (development measurements on the 1.1.2 code)
+
+Purpose: measure how well captions hold up when several people talk at once, so that changes can be judged by numbers. Method: the public LibriSpeech test-clean speech set (CC BY 4.0, not shipped, kept outside the repository) is mixed into fake crowds of 1, 2, 3, 4 and 6 talkers: one dominant (loudest, 3 to 6 dB below full level) and the others 10 to 20 dB quieter, each placed at a random stereo position and delivered as 48 kHz stereo float like VRChat's process capture. Two clips per crowd size (10 clips of about 30 s), plus three 30 s non-speech clips (steady noise, music-like tones, keyboard-like clicks). Each clip is played in real time through the real speech pipeline on CPU. Word error rate (WER) is measured against the dominant talker only. Tools: `--build-crowd` and `--eval` in `tests/VRChatTranslator.Core.Tests` (not part of the app).
+
+| Preset | 1 voice | 2 voices | 3 voices | 4 voices | 6 voices | Typical delay |
+| --- | --- | --- | --- | --- | --- | --- |
+| Balanced | 7.4% | 28.6% | 67.5% | 60.4% | 59.1% | about 1.9 s |
+| Responsive CPU | 16.4% | 30.3% | 76.3% | 66.0% | 59.2% | about 1.8 s |
+| Accurate | 8.5% | 21.1% | 73.0% | 54.9% | 62.7% | 4.6 to 7.0 s |
+
+Findings:
+
+- A single voice is captioned well. With three or more voices the loudest talker's words are mostly present but garbled by the others, and the larger Accurate model does not fix that and is much slower. Whisper's own confidence is not a usable overlap detector (one garbled 3-voice caption scored 0.91).
+- Steady noise made the recogniser invent "Thank you for watching. Please subscribe and like." five times. The stock-phrase filter added after this removed all of them with no change in any crowd result.
+- Silero VAD (a neural voice detector, MIT) was tried in place of the loudness gate: no accuracy gain with several voices, a small delay cost (mean of three alternating runs on one voice: 2,080 ms against 1,970 ms; the ranges overlap), and it fed fewer non-speech sounds to the recogniser (5 against 14 passes in 90 s of noise). It is not used by the app; the model and its licence are kept in the test folder for later experiments.
+- A shorter wait before closing a segment (250 ms instead of 350 ms) made delay and accuracy worse, not better.
+
+Limits: fake crowds built from clean read speech, two clips per size, English only, one PC, delays vary by about 0.3 s from run to run with whatever else the PC is doing, and the stereo positions are an assumption about VRChat's spatial audio that has not been checked against a real lobby recording.
+
 ## Release 1.1.2, 2026-10-12
 
 1.1.2 contains the fixes for the problems found in the real-world session below. It has no library updates. What was run on the build PC:

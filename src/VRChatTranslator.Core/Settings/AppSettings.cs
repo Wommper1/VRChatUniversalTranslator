@@ -30,6 +30,13 @@ public sealed record AppSettings
 
     public static IReadOnlyList<string> DefaultVocabulary { get; } =
     ["VRChat"];
+
+    /// <summary>
+    /// The window keeps the chosen performance preset and the custom-mode fields outside this record. Apply must save them too,
+    /// not only closing the app, or a crash or a killed process loses the choice.
+    /// </summary>
+    public AppSettings WithRuntimeSelection(PerformanceMode mode, CustomModeSettings custom) =>
+        this with { SelectedMode = mode, CustomMode = custom };
 }
 
 public sealed record HeadsetSettings

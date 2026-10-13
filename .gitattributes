@@ -3,4 +3,5 @@
 *.png binary
 *.dll binary
 *.zip binary
+*.onnx binary
 *.sh text eol=lf

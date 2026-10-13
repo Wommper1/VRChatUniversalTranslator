@@ -37,6 +37,19 @@ public sealed class LocalWhisperSpeechService : ILocalSpeechService
     private volatile bool _speakerLabelsEnabled;
     public bool SpeakerLabelsEnabled { get => _speakerLabelsEnabled; set => _speakerLabelsEnabled = value; }
     public Func<CaptionEvent, CancellationToken, Task<CaptionEvent>>? TransformCaptionAsync { get; set; }
+
+    /// <summary>
+    /// Which detector decides what is speech. The app uses the energy gate: in the 2026-10-13 crowd evaluation Silero gave no
+    /// accuracy gain with several voices and was about 0.1 s slower, and the stock-phrase filter already removes the false
+    /// captions it was tried for (see VERIFICATION.md). Auto and Silero stay available for experiments when the model file is present.
+    /// </summary>
+    public VoiceDetectionMode VoiceDetection { get; set; } = VoiceDetectionMode.Energy;
+
+    /// <summary>How sure the Silero detector must be (0 to 1) before sound counts as speech. Higher rejects more non-speech.</summary>
+    public float SileroThreshold { get; set; } = 0.5f;
+
+    /// <summary>How long speech must stop before a segment is handed to the recogniser.</summary>
+    public int EndSilenceMilliseconds { get; set; } = 350;
     public void DiscardPendingCaptions() => Interlocked.Increment(ref _captionGeneration);
 
     public event EventHandler<SpeechPipelineChangedEventArgs>? StateChanged;
@@ -124,7 +137,8 @@ public sealed class LocalWhisperSpeechService : ILocalSpeechService
             }, cancellationToken).ConfigureAwait(false);
 
             _segmentQueueCapacity = Math.Clamp(maximumQueueLength, 1, 5);
-            _segmenter = new PcmSpeechSegmenter(vadThreshold, maximumSegmentSeconds);
+            _segmenter = new PcmSpeechSegmenter(
+                SpeechActivityFactory.Create(VoiceDetection, vadThreshold, sileroThreshold: SileroThreshold), maximumSegmentSeconds, EndSilenceMilliseconds);
             _segments = Channel.CreateBounded<QueuedSegment>(new BoundedChannelOptions(_segmentQueueCapacity)
             {
                 SingleReader = true,
@@ -140,7 +154,8 @@ public sealed class LocalWhisperSpeechService : ILocalSpeechService
             {
                 State = SpeechPipelineState.Listening,
                 ModelName = _modelName,
-                Backend = "CPU"
+                Backend = "CPU",
+                VoiceDetection = _segmenter.VoiceDetection
             });
         }
         catch (OperationCanceledException)
@@ -399,6 +414,7 @@ public sealed class LocalWhisperSpeechService : ILocalSpeechService
         _workerCancellation?.Dispose();
         _workerCancellation = null;
         _segments = null;
+        _segmenter?.Dispose();
         _segmenter = null;
         if (_translationProcessor is not null)
         {

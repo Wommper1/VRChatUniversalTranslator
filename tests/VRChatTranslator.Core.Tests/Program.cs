@@ -13,6 +13,8 @@ internal static partial class Program
 {
     private static async Task<int> Main(string[] args)
     {
+        if (args is ["--build-crowd", var crowdArchive, var crowdFolder, .. var buildOptions]) return await CrowdEval.BuildAsync(crowdArchive, crowdFolder, buildOptions);
+        if (args is ["--eval", var corpusFolder, .. var evalOptions]) return await CrowdEval.RunAsync(corpusFolder, evalOptions);
         if (args is ["--speaker-test", var sampleFolder]) return await RunSpeakerTest(sampleFolder);
         if (args is ["--pipeline-test", var fixtureFolder]) return await RunPipelineTest(fixtureFolder);
         if (args is ["--pack-download-test", var packFolder]) return await RunPackDownloadTest(packFolder);
@@ -121,7 +123,16 @@ internal static partial class Program
             ("PowerShell is started by its full path", PowerShellIsStartedByFullPath),
             ("language pack extraction refuses entries that climb out of the folder", LanguagePackExtractionRefusesPathTraversal),
             ("a second launch is refused and the first copy is told to show itself", SecondLaunchIsRefusedAndTheFirstCopyIsToldToShow),
-            ("the first-run notice says where to click and how big the model is", FirstRunNoticeSaysWhereToClickAndHowBig)
+            ("the first-run notice says where to click and how big the model is", FirstRunNoticeSaysWhereToClickAndHowBig),
+            ("word error rate is exact and forgiving about case and punctuation", WordErrorRateIsExactAndForgivingAboutCaseAndPunctuation),
+            ("evaluation math (percentiles, word overlap, invented captions) is correct", EvaluationMathIsCorrect),
+            ("the crowd mixer places voices like VRChat's stereo capture", CrowdMixerPlacesVoicesLikeVrchatCapture),
+            ("crowd scenarios are seeded and planned correctly", CrowdScenariosAreSeededAndPlanned),
+            ("Apply saves the chosen performance preset", ApplySavesThePerformancePreset),
+            ("the segmenter follows the voice detector, not the loudness", TheSegmenterFollowsTheDetectorNotTheLoudness),
+            ("voice detection falls back to the energy gate when the model is missing or damaged", VoiceDetectionFallsBackToTheEnergyGateWhenTheModelIsMissingOrDamaged),
+            ("the Silero detector kept for experiments loads and rejects silence, noise, tones and clicks", TheSileroDetectorKeptForExperimentsLoadsAndRejectsSilenceAndNoise),
+            ("the filter drops stock video phrases and loops but not real sentences", TheFilterDropsStockVideoPhrasesAndLoopsButNotRealSentences)
         ];
 
         var failures = 0;

@@ -44,6 +44,13 @@ public sealed class LocalWhisperModelManager
     /// <summary>The published size of the model a mode uses, so the UI can say how big the one-time download is.</summary>
     public long GetExpectedBytes(PerformanceMode mode) => GetDefinition(mode).ExpectedBytes;
 
+    /// <summary>Re-checks an installed model against its published size and SHA-256, for example before a measurement run.</summary>
+    public Task VerifyInstalledAsync(PerformanceMode mode, CancellationToken cancellationToken = default)
+    {
+        var definition = GetDefinition(mode);
+        return DownloadIntegrity.VerifyAsync(GetModelPath(mode), definition.ExpectedBytes, definition.Sha256, "Whisper model", cancellationToken);
+    }
+
     public Task<string> DownloadBalancedModelAsync(
         IProgress<ModelDownloadProgress>? progress = null,
         CancellationToken cancellationToken = default) =>
