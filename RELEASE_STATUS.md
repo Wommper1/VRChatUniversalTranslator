@@ -1,11 +1,11 @@
 # Release status — VRChat Universal Translator 1.1.3
 
-Updated: 2026-10-15
+Updated: 2026-10-15 (after publishing 1.1.3)
 
 ## Where things stand
 
 - The repository is public, MIT-licensed (Copyright 2026 The Level Everything Company), with README, SECURITY, CONTRIBUTING, a code of conduct, issue forms, a pull-request template, a CI workflow and Dependabot.
-- Releases **1.1.0**, **1.1.1** and **1.1.2** are published as **pre-releases**. **1.1.3** is the next pre-release: it makes captions faster (an optional fast English engine, a faster Whisper setting for Balanced and Responsive CPU) and stops dropped speech being silent; see [RELEASE_NOTES.md](RELEASE_NOTES.md).
+- Releases **1.1.0**, **1.1.1**, **1.1.2** and **1.1.3** are published as **pre-releases**. **1.1.3** (2026-10-15, tag `v1.1.3` on commit `d3fb6a0`) makes captions faster (an optional fast English engine, a faster Whisper setting for Balanced and Responsive CPU) and stops dropped speech being silent; see [RELEASE_NOTES.md](RELEASE_NOTES.md). Its package was downloaded anonymously from the release page and checked against the published checksum.
 - What was tested, and what was not, is in [VERIFICATION.md](VERIFICATION.md). The new fast English engine was measured on test recordings only and has not yet been run in a live VRChat lobby.
 - The portable ZIP contains the app, README, QUICK_START, PRIVACY, SECURITY, RELEASE_NOTES, THIRD_PARTY_NOTICES, VERIFICATION, LICENSE and the third-party `licenses\` folder. It contains no settings, models, logs or keys, and the DLLs and symbol files do not embed the local path of whoever built them.
 - `artifacts/` is git-ignored on purpose: the ZIP is attached to a GitHub Release, never committed. Its SHA-256 is published in `SHA256SUMS.txt` beside it, not recorded in this file.
@@ -13,7 +13,7 @@ Updated: 2026-10-15
 ## Not yet done (say so on every release)
 
 - **Real-world acceptance, partly done.** On 2026-10-12 live VRChat captioning, the model download, the four global shortcuts, saved settings and the app's load were checked on a real PC (see [VERIFICATION.md](VERIFICATION.md)). Still not run: the SteamVR headset overlay, OSC replies to a live chatbox, a physical phone through the router and firewall, caption accuracy and false captions, other languages, language packs and speaker labels. Use `ACCEPTANCE_CHECKLIST.md` for those. Until they are done, publish releases as **pre-releases**.
-- **Fast English captions in a real lobby.** Measured on read-aloud test recordings and a small multilingual set only; its accuracy on real lobby chatter, accented English and very short utterances is not known, and the in-app download button was not exercised end to end before this release was prepared. It is off by default and labelled experimental.
+- **Fast English captions in a real lobby.** Measured on read-aloud test recordings and a small multilingual set only; its accuracy on real lobby chatter, accented English and very short utterances is not known, and nobody has yet clicked the Settings download button in the finished app (the app's own installer was run for real in a test: 12.4 s, checksums matched). It is off by default and labelled experimental.
 - **Code signing.** The executable is unsigned, so Windows SmartScreen may warn. The hash in `SHA256SUMS.txt` is the user's check.
 - **Independent security testing.** None has been done.
 
