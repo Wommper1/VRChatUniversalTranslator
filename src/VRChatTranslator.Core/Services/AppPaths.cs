@@ -18,4 +18,7 @@ public static class AppPaths
     public static string ModelsDirectory => Path.Combine(DataRoot, "models");
     public static string LogsDirectory => Path.Combine(DataRoot, "logs");
     public static string SpeakerModelPath => Path.Combine(ModelsDirectory, "speaker-eres2net.onnx");
+
+    /// <summary>The optional fast English recogniser's two files (model and token list) live here.</summary>
+    public static string FastEnglishDirectory => Path.Combine(ModelsDirectory, "parakeet-110m-int8");
 }

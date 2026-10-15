@@ -14,6 +14,12 @@ public sealed record SpeechPipelineSnapshot
     public long SuppressedCaptions { get; init; }
     public int QueueLength { get; init; }
     public long DroppedSegments { get; init; }
+    /// <summary>Total length of speech skipped to stay live since listening started.</summary>
+    public double SkippedSpeechSeconds { get; init; }
+    /// <summary>Segments captioned by the fast English engine since listening started.</summary>
+    public long FastEnglishSegments { get; init; }
+    /// <summary>Segments captioned by Whisper since listening started.</summary>
+    public long WhisperSegments { get; init; }
     public bool IsSpeechDetected { get; init; }
     public string? LastError { get; init; }
 }

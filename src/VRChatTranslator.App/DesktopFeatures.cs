@@ -250,6 +250,9 @@ public partial class MainWindow
         _overlay.Show();
         _overlay.ShowCaption(new(DateTimeOffset.UtcNow, "ja", "Japanese", string.Concat(Enumerable.Repeat("こんにちは、世界。", 12)), string.Join(" ", Enumerable.Repeat("Long caption wrapping test", 12)), 1, TimeSpan.Zero));
         Require(_overlay.Height > 180, "Long bilingual captions must grow instead of clipping at the default height.");
+        Require(!_overlay.IsSkipNoticeVisible, "The skipped-speech note must start hidden.");
+        _overlay.ShowSkipNotice(SkippedSpeechNotice.OverlayText);
+        Require(_overlay.IsSkipNoticeVisible, "When speech is skipped the overlay must say so next to the caption.");
         List<string> shellLog = [];
         var listeningToggled = 0;
         using var shell = new DesktopShell(this, () => { }, () => { }, () => listeningToggled++, () => { }, () => { }, () => { },
@@ -278,6 +281,23 @@ public partial class MainWindow
         Require(_viewModel.ListeningSummary == "VRChat detected · ready to listen", "An installed model restores the normal 'ready to listen' text.");
         _viewModel.ApplyDetection(new(false, null, null, DateTimeOffset.UtcNow, null));
         SetSelectedModelAvailability();
+
+        // Fast English captions: off by default, honest about what is needed, and never claims to be on without the model.
+        Require(!_settings.FastEnglishEngine && !_viewModel.FastEnglishEnabled, "The fast English engine must be off by default.");
+        _viewModel.SetFastEnglishAvailability(false, 182_000_000);
+        Require(_viewModel.FastEnglishStatus.StartsWith("Off", StringComparison.Ordinal) && _viewModel.CanDownloadFastEnglish && _viewModel.FastEnglishButtonText.Contains("182 MB", StringComparison.Ordinal),
+            "With the switch off and no model, Settings must say it is off and offer the download with its size.");
+        _viewModel.FastEnglishEnabled = true;
+        Require(_viewModel.FastEnglishStatus.Contains("download", StringComparison.OrdinalIgnoreCase) && _viewModel.FastEnglishStatus.Contains("Whisper", StringComparison.Ordinal),
+            "Switched on without the model, Settings must say the download is needed and that Whisper handles everything until then.");
+        _viewModel.SetFastEnglishAvailability(true, 0);
+        Require(_viewModel.FastEnglishStatus.StartsWith("On.", StringComparison.Ordinal) && !_viewModel.CanDownloadFastEnglish, "With the model installed and the switch on, Settings must say it is on.");
+        var previousSource = _viewModel.SourceLanguage;
+        _viewModel.SourceLanguage = _viewModel.SourceLanguages.First(l => l.Code == "ja");
+        Require(_viewModel.FastEnglishStatus.Contains("locked", StringComparison.Ordinal), "A spoken language locked to Japanese must be explained as using Whisper.");
+        _viewModel.SourceLanguage = previousSource;
+        _viewModel.FastEnglishEnabled = false;
+        RefreshFastEnglishAvailability();
         _overlay.Close();
     }
 

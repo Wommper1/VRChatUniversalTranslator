@@ -316,6 +316,66 @@ internal static class CrowdEval
         return 0;
     }
 
+    /// <summary>
+    /// Builds one test recording per language from folders of short speech clips (one folder per language, for example from the
+    /// public FLEURS set). Each recording is three clips with pauses, delivered as 48 kHz stereo like the other test files. There is
+    /// no reference text: the point is which engine the pipeline chooses for a language that is not English.
+    /// </summary>
+    public static async Task<int> BuildForeignAsync(string root, string outputFolder, int clipsPerLanguage = 3)
+    {
+        Directory.CreateDirectory(outputFolder);
+        var written = 0;
+        foreach (var languageFolder in Directory.GetDirectories(root).OrderBy(p => p, StringComparer.Ordinal))
+        {
+            var language = Path.GetFileName(languageFolder);
+            var clips = Directory.GetFiles(languageFolder, "*.wav", SearchOption.AllDirectories).OrderBy(p => p, StringComparer.Ordinal).Take(clipsPerLanguage).ToArray();
+            if (clips.Length == 0) continue;
+            var talkers = new List<MixTalker>();
+            var placed = new List<PlacedUtterance>();
+            var time = 0.5;
+            foreach (var clip in clips)
+            {
+                var samples = ReadSixteenKilohertzMono(clip);
+                var peak = samples.Length == 0 ? 0 : samples.Max(Math.Abs);
+                if (peak > 0) for (var i = 0; i < samples.Length; i++) samples[i] *= 0.6f / peak;
+                talkers.Add(new MixTalker(samples, -4, 0, time));
+                placed.Add(new PlacedUtterance(Path.GetFileNameWithoutExtension(clip), time, time + samples.Length / 16_000d));
+                time += samples.Length / 16_000d + 1.0;
+            }
+
+            var name = $"crowd-n1-{language}";
+            var audio = CrowdMixer.Mix(talkers, time);
+            using (var writer = new WaveFileWriter(Path.Combine(outputFolder, name + ".wav"), WaveFormat.CreateIeeeFloatWaveFormat(CrowdMixer.OutputRate, 2)))
+            {
+                writer.WriteSamples(audio, 0, audio.Length);
+            }
+
+            var scenario = new CrowdScenario(name, 1, 0, time, [new PlannedTalker(language, -4, 0, placed, "")]);
+            await File.WriteAllTextAsync(Path.Combine(outputFolder, name + ".json"), JsonSerializer.Serialize(scenario, Json));
+            Console.WriteLine($"  {name}: {time:0.0} s, {clips.Length} clips");
+            written++;
+        }
+
+        Console.WriteLine($"Wrote {written} files to {outputFolder}");
+        return written == 0 ? 1 : 0;
+    }
+
+    private static float[] ReadSixteenKilohertzMono(string path)
+    {
+        using var reader = new WaveFileReader(path);
+        if (reader.WaveFormat.SampleRate != 16_000 || reader.WaveFormat.Channels != 1)
+        {
+            throw new InvalidDataException($"{path} must be 16 kHz mono, got {reader.WaveFormat}.");
+        }
+
+        var provider = reader.ToSampleProvider();
+        var samples = new List<float>(16_000 * 15);
+        var buffer = new float[16_000];
+        int read;
+        while ((read = provider.Read(buffer.AsSpan())) > 0) samples.AddRange(buffer.AsSpan(0, read).ToArray());
+        return samples.ToArray();
+    }
+
     private static IReadOnlyDictionary<string, IReadOnlyList<Utterance>> ReadLibriSpeech(string archivePath, int maximumSpeakers, int maximumUtterancesPerSpeaker)
     {
         var transcripts = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -392,7 +452,8 @@ internal static class CrowdEval
         var speed = DoubleOption(options, "--speed", 1.0);
         var vadName = StringOption(options, "--vad", "auto");
         if (!Enum.TryParse<VoiceDetectionMode>(vadName, ignoreCase: true, out var vad)) throw new ArgumentException($"Unknown voice detection '{vadName}' (auto, energy, silero).");
-        var tuning = new Tuning(DoubleOption(options, "--silero-threshold", 0.5), IntOption(options, "--end-silence", 350));
+        var tuning = new Tuning(DoubleOption(options, "--silero-threshold", 0.5), IntOption(options, "--end-silence", 350),
+            IntOption(options, "--audio-ctx", 0), IntOption(options, "--threads", 0));
         var maxFiles = IntOption(options, "--max-files", int.MaxValue);
         var talkerFilter = StringOption(options, "--talkers", "").Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToHashSet();
 
@@ -400,7 +461,25 @@ internal static class CrowdEval
         if (!manager.IsModelInstalled(mode)) throw new InvalidOperationException($"The model for {mode} is not installed at {manager.GetModelPath(mode)}.");
         await manager.VerifyInstalledAsync(mode);
         var profile = PresetRuntimeProfile.For(mode);
-        Console.WriteLine($"Mode {mode}: {profile.ModelFileName} verified; threads {profile.CpuThreads}, segment max {profile.MaximumSegmentSeconds} s, queue {profile.MaximumQueueLength}, feed speed x{speed}, voice detection {vad} (threshold {tuning.SileroThreshold}, end silence {tuning.EndSilenceMilliseconds} ms)");
+        // An experimental model file (for example a compressed one under test) replaces the preset's model for this run only.
+        var modelPath = StringOption(options, "--model-path", "");
+        if (modelPath.Length == 0) modelPath = manager.GetModelPath(mode);
+        else if (!File.Exists(modelPath)) throw new FileNotFoundException("The --model-path file does not exist.", modelPath);
+        // Like the app: without --audio-ctx the preset's own audio context applies; --audio-ctx 0 forces Whisper's default.
+        if (!options.Contains("--audio-ctx")) tuning = tuning with { AudioContextSize = profile.AudioContextSize };
+        var threads = tuning.Threads > 0 ? tuning.Threads : profile.CpuThreads;
+        // --engine parakeet-only | hybrid --engine-dir <folder with model.int8.onnx and tokens.txt>: measures the fast English engine in the
+        // same pipeline. parakeet-only never loads Whisper; hybrid sends English to it and everything else to Whisper. --source en|auto.
+        var engine = StringOption(options, "--engine", "whisper").ToLowerInvariant();
+        if (engine is not ("whisper" or "parakeet-only" or "hybrid")) throw new ArgumentException($"Unknown --engine '{engine}' (whisper, parakeet-only, hybrid).");
+        using var alternative = engine == "whisper"
+            ? null
+            : new SherpaNemoCtcRecognizer(
+                Path.Combine(StringOption(options, "--engine-dir", ""), "model.int8.onnx"),
+                Path.Combine(StringOption(options, "--engine-dir", ""), "tokens.txt"), threads);
+        if (alternative is not null) tuning = tuning with { Recognizer = alternative, FastOnly = engine == "parakeet-only" };
+        tuning = tuning with { Source = StringOption(options, "--source", "auto"), GateContext = IntOption(options, "--gate-ctx", 384), GateModel = StringOption(options, "--gate-model", "") };
+        Console.WriteLine($"Mode {mode}: {(alternative is null ? "" : $"{alternative.Name} ({engine}), source {tuning.Source}, gate context {tuning.GateContext}, beside ")}{Path.GetFileName(modelPath)}{(StringOption(options, "--model-path", "").Length == 0 ? " verified" : " (experimental file, not checked)")}; threads {threads}, audio context {(tuning.AudioContextSize > 0 ? tuning.AudioContextSize.ToString() : "default")}, segment max {profile.MaximumSegmentSeconds} s, queue {profile.MaximumQueueLength}, feed speed x{speed}, voice detection {vad} (threshold {tuning.SileroThreshold}, end silence {tuning.EndSilenceMilliseconds} ms)");
 
         var sheets = Directory.GetFiles(corpusFolder, "crowd-*.json").OrderBy(p => p, StringComparer.Ordinal).ToArray();
         var rows = new List<EvalRow>();
@@ -409,14 +488,14 @@ internal static class CrowdEval
             var scenario = JsonSerializer.Deserialize<CrowdScenario>(await File.ReadAllTextAsync(sheet))
                 ?? throw new InvalidDataException($"{sheet} is not a crowd answer sheet.");
             if (talkerFilter.Count > 0 && !talkerFilter.Contains(scenario.Talkers)) continue;
-            var row = await EvaluateOneAsync(scenario, Path.ChangeExtension(sheet, ".wav"), manager.GetModelPath(mode), profile, speed, vad, tuning, options.Contains("--show"));
+            var row = await EvaluateOneAsync(scenario, Path.ChangeExtension(sheet, ".wav"), modelPath, profile, speed, vad, tuning, options.Contains("--show"));
             rows.Add(row);
             var wer = double.IsNaN(row.Wer) ? "   n/a" : $"{row.Wer,6:P1}";
             var invented = row.Talkers == 0 ? "false" : "invented";
-            Console.WriteLine($"{row.Name,-16} N={row.Talkers}  WER {wer}  captions {row.Captions,3}  {invented} {row.Invented,2}  end-to-caption median {row.MedianEndToCaptionMs,5:0} ms p90 {row.P90EndToCaptionMs,5:0} ms  dropped {row.Dropped}  suppressed {row.Suppressed}  voice={row.VoiceDetection}");
+            Console.WriteLine($"{row.Name,-16} N={row.Talkers}  WER {wer}  captions {row.Captions,3}  {invented} {row.Invented,2}  recognition median {row.MedianInferenceMs,5:0} ms  end-to-caption median {row.MedianEndToCaptionMs,5:0} ms p90 {row.P90EndToCaptionMs,5:0} ms  dropped {row.Dropped}  suppressed {row.Suppressed}  engines: fast {row.FastSegments} · whisper {row.WhisperSegments}");
         }
 
-        var report = BuildReport(mode, speed, vad, rows);
+        var report = BuildReport(mode, speed, vad, rows, $"{(alternative is null ? Path.GetFileName(modelPath) : alternative.Name)}, threads {threads}, audio context {(tuning.AudioContextSize > 0 ? tuning.AudioContextSize.ToString() : "default")}");
         Console.WriteLine();
         Console.WriteLine(report);
         var reportPath = Path.Combine(corpusFolder, $"results-{mode}-{vad}-x{speed:0.##}-{DateTime.Now:yyyyMMdd-HHmmss}.md");
@@ -425,7 +504,14 @@ internal static class CrowdEval
         return rows.Count == 0 ? 1 : 0;
     }
 
-    private sealed record Tuning(double SileroThreshold, int EndSilenceMilliseconds);
+    private sealed record Tuning(double SileroThreshold, int EndSilenceMilliseconds, int AudioContextSize, int Threads)
+    {
+        public ISpeechRecognizer? Recognizer { get; init; }
+        public bool FastOnly { get; init; }
+        public string Source { get; init; } = "auto";
+        public int GateContext { get; init; } = 384;
+        public string GateModel { get; init; } = "";
+    }
 
     private static async Task<EvalRow> EvaluateOneAsync(CrowdScenario scenario, string wavePath, string modelPath, PresetRuntimeProfile profile, double speed, VoiceDetectionMode vad, Tuning tuning, bool show = false)
     {
@@ -448,11 +534,21 @@ internal static class CrowdEval
         var captions = new List<CaptionEvent>();
         var gate = new object();
         await using var capture = new StereoFixtureCapture();
-        await using var speech = new LocalWhisperSpeechService { VoiceDetection = vad, SileroThreshold = (float)tuning.SileroThreshold, EndSilenceMilliseconds = tuning.EndSilenceMilliseconds };
+        await using var speech = new LocalWhisperSpeechService
+        {
+            VoiceDetection = vad,
+            SileroThreshold = (float)tuning.SileroThreshold,
+            EndSilenceMilliseconds = tuning.EndSilenceMilliseconds,
+            AudioContextSize = tuning.AudioContextSize,
+            FastEnglishRecognizer = tuning.Recognizer,
+            FastEnglishOnly = tuning.FastOnly,
+            EnglishGateAudioContext = tuning.GateContext,
+            EnglishGateModelPath = tuning.GateModel.Length == 0 ? null : tuning.GateModel
+        };
         speech.CaptionProduced += (_, e) => { lock (gate) captions.Add(e.Caption); };
-        await speech.StartAsync(capture, modelPath, profile.CpuThreads, showOriginalText: false, vadThreshold: profile.VadThreshold,
+        await speech.StartAsync(capture, modelPath, tuning.Threads > 0 ? tuning.Threads : profile.CpuThreads, showOriginalText: false, vadThreshold: profile.VadThreshold,
             maximumSegmentSeconds: profile.MaximumSegmentSeconds, maximumQueueLength: profile.MaximumQueueLength,
-            translateToEnglish: true, sourceLanguage: "auto", vocabulary: string.Join(", ", AppSettings.DefaultVocabulary));
+            translateToEnglish: true, sourceLanguage: tuning.Source, vocabulary: string.Join(", ", AppSettings.DefaultVocabulary));
         var loading = Stopwatch.StartNew();
         while (speech.Current.State != SpeechPipelineState.Listening && loading.Elapsed < TimeSpan.FromSeconds(60)) await Task.Delay(100);
 
@@ -490,6 +586,7 @@ internal static class CrowdEval
         }
 
         var endToCaption = ordered.Select(c => c.EndToCaptionDelay.TotalMilliseconds).ToArray();
+        var inference = ordered.Select(c => c.Latency.TotalMilliseconds).ToArray();
         return new EvalRow(
             scenario.Name,
             scenario.Talkers,
@@ -501,22 +598,25 @@ internal static class CrowdEval
             EvalMath.Percentile(endToCaption, 90),
             snapshot.DroppedSegments,
             snapshot.SuppressedCaptions,
-            voiceDetection);
+            voiceDetection,
+            snapshot.FastEnglishSegments,
+            snapshot.WhisperSegments,
+            EvalMath.Percentile(inference, 50));
     }
 
-    private static string BuildReport(PerformanceMode mode, double speed, VoiceDetectionMode vad, IReadOnlyList<EvalRow> rows)
+    private static string BuildReport(PerformanceMode mode, double speed, VoiceDetectionMode vad, IReadOnlyList<EvalRow> rows, string setup)
     {
         var text = new StringBuilder();
-        text.AppendLine($"# Crowd evaluation, {mode}, voice detection {vad} ({rows.Select(r => r.VoiceDetection).Distinct().FirstOrDefault()}), feed speed x{speed:0.##}, {DateTime.Now:yyyy-MM-dd HH:mm}");
+        text.AppendLine($"# Crowd evaluation, {mode}, {setup}, voice detection {vad} ({rows.Select(r => r.VoiceDetection).Distinct().FirstOrDefault()}), feed speed x{speed:0.##}, {DateTime.Now:yyyy-MM-dd HH:mm}");
         text.AppendLine();
         text.AppendLine("WER is measured against the dominant (loudest) talker only. Lower is better. Invented = caption sharing under 30% of its words with every talker. For the 0-talker rows (noise, tones, clicks) every caption is a false caption and the delay columns are not meaningful.");
         text.AppendLine();
-        text.AppendLine("| Talkers | Files | Mean WER | Captions | Invented / false | Median end-to-caption (ms) | p90 (ms) | Dropped | Suppressed |");
-        text.AppendLine("| --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+        text.AppendLine("| Talkers | Files | Mean WER | Captions | Invented / false | Median recognition (ms) | Median end-to-caption (ms) | p90 (ms) | Dropped | Suppressed |");
+        text.AppendLine("| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
         foreach (var group in rows.GroupBy(r => r.Talkers).OrderBy(g => g.Key))
         {
             var wer = group.Key == 0 ? "n/a" : $"{group.Average(r => r.Wer):P1}";
-            text.AppendLine($"| {group.Key} | {group.Count()} | {wer} | {group.Sum(r => r.Captions)} | {group.Sum(r => r.Invented)} | {group.Average(r => r.MedianEndToCaptionMs):0} | {group.Average(r => r.P90EndToCaptionMs):0} | {group.Sum(r => r.Dropped)} | {group.Sum(r => r.Suppressed)} |");
+            text.AppendLine($"| {group.Key} | {group.Count()} | {wer} | {group.Sum(r => r.Captions)} | {group.Sum(r => r.Invented)} | {group.Average(r => r.MedianInferenceMs):0} | {group.Average(r => r.MedianEndToCaptionMs):0} | {group.Average(r => r.P90EndToCaptionMs):0} | {group.Sum(r => r.Dropped)} | {group.Sum(r => r.Suppressed)} |");
         }
 
         return text.ToString();
@@ -534,10 +634,10 @@ internal static class CrowdEval
     private static double DoubleOption(string[] options, string name, double fallback) =>
         double.TryParse(StringOption(options, name, ""), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var value) && value > 0 ? value : fallback;
 
-    private sealed record EvalRow(string Name, int Talkers, double Wer, int Captions, int Invented, double MedianEndToCaptionMs, double P90EndToCaptionMs, long Dropped, long Suppressed, string VoiceDetection);
+    private sealed record EvalRow(string Name, int Talkers, double Wer, int Captions, int Invented, double MedianEndToCaptionMs, double P90EndToCaptionMs, long Dropped, long Suppressed, string VoiceDetection, long FastSegments, long WhisperSegments, double MedianInferenceMs);
 
     /// <summary>Delivers 48 kHz stereo float audio to the speech pipeline in 50 ms steps, like WASAPI process capture does.</summary>
-    private sealed class StereoFixtureCapture : IProcessAudioCaptureService
+    internal sealed class StereoFixtureCapture : IProcessAudioCaptureService
     {
         public event EventHandler<AudioCaptureChangedEventArgs>? CaptureChanged { add { } remove { } }
         public event EventHandler<AudioChunkAvailableEventArgs>? AudioChunkAvailable;

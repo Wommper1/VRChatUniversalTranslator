@@ -39,6 +39,7 @@ public partial class MainWindow : Window
     private SpeechPipelineState? _lastLoggedSpeechState;
     private int _performanceLogSamples;
     private bool _modelNoticeShown;
+    private DateTimeOffset _lastSkipOverlayAt = DateTimeOffset.MinValue;
 
     public MainWindow(bool skipLifecycleCleanup = false)
     {
@@ -54,11 +55,13 @@ public partial class MainWindow : Window
         InitializeComponent();
         DataContext = _viewModel;
         InitializeDesktopFeatures();
+        InitializeFastEnglish();
         _speech.TransformCaptionAsync = TranslateIncomingCaptionAsync;
         _processDetector.DetectionChanged += OnDetectionChanged;
         _audioCapture.CaptureChanged += OnCaptureChanged;
         _speech.StateChanged += OnSpeechStateChanged;
         _speech.CaptionProduced += OnCaptionProduced;
+        _speech.SpeechSkipped += OnSpeechSkipped;
         _captionHub.CaptionPublished += OnCaptionPublished;
         _performanceMonitor.SnapshotAvailable += OnPerformanceSnapshot;
         Loaded += OnLoaded;
@@ -158,6 +161,7 @@ public partial class MainWindow : Window
         _audioCapture.CaptureChanged -= OnCaptureChanged;
         _speech.StateChanged -= OnSpeechStateChanged;
         _speech.CaptionProduced -= OnCaptionProduced;
+        _speech.SpeechSkipped -= OnSpeechSkipped;
         _captionHub.CaptionPublished -= OnCaptionPublished;
         _performanceMonitor.SnapshotAvailable -= OnPerformanceSnapshot;
         await _preferencesGate.WaitAsync();
@@ -197,6 +201,7 @@ public partial class MainWindow : Window
         }
 
         await TryCleanupAsync("speech pipeline", async () => await _speech.DisposeAsync());
+        await TryCleanupAsync("fast English engine", () => { ReleaseFastEnglish(); return Task.CompletedTask; });
         await TryCleanupAsync("local text translation", async () => await _textTranslator.DisposeAsync());
         _replySender.Dispose();
         await TryCleanupAsync("audio capture", async () => await _audioCapture.DisposeAsync());
@@ -298,6 +303,8 @@ public partial class MainWindow : Window
         {
             try
             {
+                ConfigureFastEnglish();
+                _speech.AudioContextSize = GetRuntimeProfile().AudioContextSize;
                 var profile = GetRuntimeProfile();
                 await _speech.StartAsync(
                     _audioCapture,
@@ -361,7 +368,25 @@ public partial class MainWindow : Window
         _ = Dispatcher.InvokeAsync(() =>
         {
             _viewModel.ApplySpeech(e.Snapshot);
-            TimingDetails.Text = $"Queue: {e.Snapshot.QueueDelay?.TotalSeconds:0.00}s · End of speech to caption: {e.Snapshot.EndToCaptionDelay?.TotalSeconds:0.00}s · Suppressed: {e.Snapshot.SuppressedCaptions}";
+            TimingDetails.Text = $"Queue: {e.Snapshot.QueueDelay?.TotalSeconds:0.00}s · End of speech to caption: {e.Snapshot.EndToCaptionDelay?.TotalSeconds:0.00}s · Suppressed: {e.Snapshot.SuppressedCaptions} · Skipped speech: {e.Snapshot.SkippedSpeechSeconds:0.0}s";
+        });
+    }
+
+    private void OnSpeechSkipped(object? sender, SpeechSkippedEventArgs e)
+    {
+        var total = _speech.Current.SkippedSpeechSeconds;
+        var message = SkippedSpeechNotice.Describe(e.Skipped, total);
+        _ = _log.WriteAsync("SPEECH", message);
+        _ = Dispatcher.InvokeAsync(() =>
+        {
+            if (_cleanupStarted) return;
+            _viewModel.OperationStatus = message;
+            var now = DateTimeOffset.UtcNow;
+            if (_viewModel.OverlayEnabled && SkippedSpeechNotice.ShouldShowOverlay(_lastSkipOverlayAt, now))
+            {
+                _lastSkipOverlayAt = now;
+                _overlay.ShowSkipNotice(SkippedSpeechNotice.OverlayText);
+            }
         });
     }
 
@@ -465,7 +490,7 @@ public partial class MainWindow : Window
         if (_performanceLogSamples >= 30)
         {
             _performanceLogSamples = 0;
-            _ = _log.WriteAsync("PERFORMANCE", $"systemCpu={snapshot.SystemCpuPercent:0.0}%; translatorCpu={snapshot.TranslatorCpuPercent:0.0}%; translatorRamMiB={snapshot.TranslatorMemoryBytes / 1024d / 1024d:0}; queue={_speech.Current.QueueLength}; latencyMs={_speech.Current.TranscriptionLatency?.TotalMilliseconds:0}.");
+            _ = _log.WriteAsync("PERFORMANCE", $"systemCpu={snapshot.SystemCpuPercent:0.0}%; translatorCpu={snapshot.TranslatorCpuPercent:0.0}%; translatorRamMiB={snapshot.TranslatorMemoryBytes / 1024d / 1024d:0}; queue={_speech.Current.QueueLength}; latencyMs={_speech.Current.TranscriptionLatency?.TotalMilliseconds:0}; fastEnglishSegments={_speech.Current.FastEnglishSegments}; whisperSegments={_speech.Current.WhisperSegments}.");
         }
         var heavy = snapshot.SystemCpuPercent >= 90 || _speech.Current.QueueLength >= 2;
         _heavyLoadSamples = heavy ? _heavyLoadSamples + 1 : 0;

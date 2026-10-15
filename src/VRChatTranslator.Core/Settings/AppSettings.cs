@@ -14,6 +14,8 @@ public sealed record AppSettings
     public string SourceLanguage { get; init; } = "auto";
     public bool PreloadOutputLanguage { get; init; }
     public bool SpeakerLabelsEnabled { get; init; }
+    /// <summary>Opt-in: use the fast English recogniser (after a one-time download) for English speech. Other languages and translation stay with Whisper.</summary>
+    public bool FastEnglishEngine { get; init; }
     public bool MinimizeToTray { get; init; } = true;
     public bool CloseToTray { get; init; }
     public string ListeningShortcut { get; init; } = "Ctrl+Alt+L";

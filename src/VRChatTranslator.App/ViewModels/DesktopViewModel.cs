@@ -18,7 +18,7 @@ public sealed partial class MainWindowViewModel
     public IReadOnlyList<LanguageChoice> TargetLanguages => LanguageCatalog.Languages;
     public ObservableCollection<HistoryEntry> Conversation { get; } = [];
     public ObservableCollection<WordCorrection> Corrections { get; } = [];
-    public LanguageChoice SourceLanguage { get => _sourceLanguage; set => SetField(ref _sourceLanguage, value); }
+    public LanguageChoice SourceLanguage { get => _sourceLanguage; set { SetField(ref _sourceLanguage, value); RefreshFastEnglish(); } }
     public LanguageChoice TargetLanguage { get => _targetLanguage; set => SetField(ref _targetLanguage, value); }
     public bool ShowOriginalText { get => _showOriginalText; set => SetField(ref _showOriginalText, value); }
     public bool PreloadOutputLanguage { get => _preloadOutputLanguage; set => SetField(ref _preloadOutputLanguage, value); }
@@ -45,6 +45,7 @@ public sealed partial class MainWindowViewModel
         ShowOriginalText = settings.ShowOriginalText;
         PreloadOutputLanguage = settings.PreloadOutputLanguage;
         SpeakerLabelsEnabled = settings.SpeakerLabelsEnabled;
+        FastEnglishEnabled = settings.FastEnglishEngine;
         OverlayEnabled = settings.Overlay.Enabled;
         CaptionFontSize = settings.Overlay.FontSize;
         CaptionOpacity = settings.Overlay.Opacity;
@@ -62,7 +63,7 @@ public sealed partial class MainWindowViewModel
     public AppSettings CaptureDesktopSettings(AppSettings previous) => previous with
     {
         SourceLanguage = SourceLanguage.Code, TargetLanguage = TargetLanguage.Code,
-        ShowOriginalText = ShowOriginalText, SpeakerLabelsEnabled = SpeakerLabelsEnabled,
+        ShowOriginalText = ShowOriginalText, SpeakerLabelsEnabled = SpeakerLabelsEnabled, FastEnglishEngine = FastEnglishEnabled,
         PreloadOutputLanguage = PreloadOutputLanguage,
         CloseToTray = CloseToTray, MinimizeToTray = MinimizeToTray,
         ListeningShortcut = ListeningShortcut, VisibilityShortcut = VisibilityShortcut, PauseShortcut = PauseShortcut,

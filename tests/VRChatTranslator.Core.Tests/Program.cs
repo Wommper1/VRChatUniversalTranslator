@@ -15,6 +15,9 @@ internal static partial class Program
     {
         if (args is ["--build-crowd", var crowdArchive, var crowdFolder, .. var buildOptions]) return await CrowdEval.BuildAsync(crowdArchive, crowdFolder, buildOptions);
         if (args is ["--eval", var corpusFolder, .. var evalOptions]) return await CrowdEval.RunAsync(corpusFolder, evalOptions);
+        if (args is ["--check-fast-english-archive", var fastArchive]) return await CheckFastEnglishArchiveAsync(fastArchive);
+        if (args is ["--build-foreign", var foreignRoot, var foreignOut]) return await CrowdEval.BuildForeignAsync(foreignRoot, foreignOut);
+        if (args is ["--check-fast-english-download", var downloadFolder]) return await CheckFastEnglishDownloadAsync(downloadFolder);
         if (args is ["--speaker-test", var sampleFolder]) return await RunSpeakerTest(sampleFolder);
         if (args is ["--pipeline-test", var fixtureFolder]) return await RunPipelineTest(fixtureFolder);
         if (args is ["--pack-download-test", var packFolder]) return await RunPackDownloadTest(packFolder);
@@ -132,7 +135,17 @@ internal static partial class Program
             ("the segmenter follows the voice detector, not the loudness", TheSegmenterFollowsTheDetectorNotTheLoudness),
             ("voice detection falls back to the energy gate when the model is missing or damaged", VoiceDetectionFallsBackToTheEnergyGateWhenTheModelIsMissingOrDamaged),
             ("the Silero detector kept for experiments loads and rejects silence, noise, tones and clicks", TheSileroDetectorKeptForExperimentsLoadsAndRejectsSilenceAndNoise),
-            ("the filter drops stock video phrases and loops but not real sentences", TheFilterDropsStockVideoPhrasesAndLoopsButNotRealSentences)
+            ("the filter drops stock video phrases and loops but not real sentences", TheFilterDropsStockVideoPhrasesAndLoopsButNotRealSentences),
+            ("the queue policy skips old speech only when newer speech waits", TheQueuePolicySkipsOldSpeechOnlyWhenNewerSpeechWaits),
+            ("a full queue drops the oldest speech, keeps the newest and says so", AFullQueueDropsTheOldestSpeechAndSaysSo),
+            ("old speech is skipped only when newer speech is waiting, never silently", OldSpeechIsSkippedOnlyWhenNewerSpeechIsWaiting),
+            ("the skipped-speech note is plain and rate limited", SkippedSpeechNoticeIsPlainAndRateLimited),
+            ("only the measured base-model presets use the faster audio context", OnlyTheMeasuredBaseModelPresetsUseTheFasterAudioContext),
+            ("the fast English model unpacks only the two expected files", TheFastEnglishModelUnpacksOnlyTheTwoExpectedFiles),
+            ("the fast English model rejects unsafe, wrong or incomplete archives and leaves nothing behind", TheFastEnglishModelRejectsUnsafeWrongOrIncompleteArchives),
+            ("the fast English model download is pinned and optional", TheFastEnglishModelDownloadIsPinnedAndOptional),
+            ("English routing never sends another language to the English-only engine", EnglishRoutingIsCautiousAboutOtherLanguages),
+            ("the fast English engine captions speech without loading Whisper", TheFastEnglishEngineCaptionsSpeechWithoutLoadingWhisper)
         ];
 
         var failures = 0;

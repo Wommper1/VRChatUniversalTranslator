@@ -19,3 +19,12 @@ The application icon is original artwork for this project and is covered by the 
 Translation packs are selected from the official Argos package index at https://github.com/argosopentech/argospm-index and downloaded over HTTPS from argos-net.com. Package metadata/README files remain beside each downloaded model. The optional speaker model is 3D-Speaker ERes2Net from the sherpa-onnx speaker-recognition release: https://github.com/k2-fsa/sherpa-onnx/releases/tag/speaker-recongition-models . Model-specific upstream licensing applies; no trained speaker identity data from this app is distributed.
 
 Tests download public fixture recordings from whisper.cpp and csukuangfj/sr-data into ignored `artifacts/` folders. They are not shipped in the portable ZIP, and user audio is not used for those checks.
+
+## Optional fast English recogniser
+
+When you click **Download fast English model** in Settings, the app downloads NVIDIA's **Parakeet TDT-CTC 110M** English speech model, converted to ONNX (int8) by the sherpa-onnx project, from https://github.com/k2-fsa/sherpa-onnx/releases/tag/asr-models . It is not part of this repository or the portable ZIP.
+
+- Model: `nvidia/parakeet-tdt_ctc-110m`, Copyright (c) NVIDIA Corporation, licensed under **Creative Commons Attribution 4.0 (CC-BY-4.0)** — https://creativecommons.org/licenses/by/4.0/ . Model card: https://huggingface.co/nvidia/parakeet-tdt_ctc-110m . The ONNX conversion and int8 quantisation were made by the sherpa-onnx project (Apache-2.0); the app does not modify the model further.
+- SharpZipLib 1.4.2: MIT, Copyright (c) SharpZipLib contributors — https://github.com/icsharpcode/SharpZipLib . Used only to open that one downloaded archive.
+
+Development measurements (kept outside the repository, never shipped) also used the public FLEURS speech set from Google (CC-BY-4.0, https://huggingface.co/datasets/google/fleurs) for the language-check safety test, alongside the LibriSpeech test-clean set above.

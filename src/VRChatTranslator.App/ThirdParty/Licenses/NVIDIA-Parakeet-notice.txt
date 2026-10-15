@@ -1,0 +1,9 @@
+Optional fast English recogniser - attribution
+
+The optional model downloaded by "Download fast English model" in Settings is NVIDIA's Parakeet TDT-CTC 110M English speech
+model (nvidia/parakeet-tdt_ctc-110m), Copyright (c) NVIDIA Corporation, licensed under the Creative Commons Attribution 4.0
+International licence (CC-BY-4.0): https://creativecommons.org/licenses/by/4.0/
+
+Model card: https://huggingface.co/nvidia/parakeet-tdt_ctc-110m
+It was converted to ONNX and quantised to int8 by the sherpa-onnx project (Apache-2.0, https://github.com/k2-fsa/sherpa-onnx).
+This app does not modify the model. It is downloaded on request, is not part of this ZIP, and runs on your PC only.

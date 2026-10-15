@@ -45,3 +45,11 @@ Download the optional speaker model in Settings, then enable **Optional speaker 
 Preferences and models: `%LOCALAPPDATA%\TheLevelEverythingCompany\VRChatUniversalTranslator`. No transcript or audio file is automatically saved. **Advanced → Save 10 second audio test** saves audio only after you explicitly choose a destination. The existing optional phone display is in Advanced; leave it off if unused. Open the link it shows (it includes a PIN that is new every time) on a phone on the same Wi-Fi. Never forward its port, and do not use it on public Wi-Fi.
 
 If listening shows no captions, check the model status in Settings first. Run only one copy of the app at a time: two copies would each process the same VRChat audio and slow everything down. For missing models use the download buttons. For off-screen captions use **Reset placement**. For a conflicting shortcut choose a different key. If a setting file is damaged the app falls back to safe defaults. For slow captions inspect Advanced's inference, queue, and end-to-caption timings. See `VERIFICATION.md` for tested limits and remaining real-VR checks.
+
+## Optional: fast English captions (experimental)
+
+If most of what you hear is English, **Settings → Fast English captions** can cut the delay from about two seconds to about half a second to a second. It needs a one-time download (about 180 MB: NVIDIA's Parakeet English model, plus the small Whisper model used to check the language). Click **DOWNLOAD FAST ENGLISH MODEL**; it switches itself on when the download is checked and finished.
+
+- English speech is captioned by the fast engine. Every other language, and all translation, is still handled by Whisper. A quick language check runs first, so a Japanese or Spanish speaker is never captioned as if they spoke English.
+- Locking the spoken language to **English** skips that check and is fastest. Locking it to any other language means Whisper is used.
+- It is off by default. Untick the box to go back to Whisper only; nothing else changes.

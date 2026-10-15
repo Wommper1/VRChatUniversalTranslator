@@ -4,7 +4,7 @@ Live captions and English translation for VRChat, running entirely on your own W
 
 It listens to the audio that `VRChat.exe` plays (never your microphone), turns speech into text with a local Whisper model, translates it to English, and shows the captions in a click-through desktop overlay, on a SteamVR dashboard overlay, and, if you switch it on, on a phone on your home network.
 
-> **Status: version 1.1.2, early release.** The build, 53 automated checks, the startup smoke test and the phone-server self-test pass, and the app has had a first real-world run with VRChat. Live VRChat sessions, a physical SteamVR headset, and a physical phone have **not** yet been through a full acceptance run, so the SteamVR overlay, speaker labels and phone display are best treated as experimental. [VERIFICATION.md](VERIFICATION.md) lists exactly what was and was not tested.
+> **Status: version 1.1.3, early release.** The build, 72 automated checks, the startup smoke test and the phone-server self-test pass, and the app has had a first real-world run with VRChat. Live VRChat sessions, a physical SteamVR headset, and a physical phone have **not** yet been through a full acceptance run, so the SteamVR overlay, speaker labels and phone display are best treated as experimental. [VERIFICATION.md](VERIFICATION.md) lists exactly what was and was not tested.
 
 ## Why it is safe to run
 
@@ -24,16 +24,17 @@ It listens to the audio that `VRChat.exe` plays (never your microphone), turns s
 - Editable word corrections and recognition hints; global shortcuts and a tray icon.
 - Optional phone display on your local network, protected by a PIN that changes every time it is turned on (off by default). The picture shows it with made-up sample captions.
 - Optional session-only speaker labels (off by default, experimental).
+- Optional **fast English captions** (off by default, experimental): a one-time 104 MB download lets English speech be captioned about half a second to a second after it ends, instead of about two. Other languages and all translation still use Whisper. See Settings.
 - CPU only. There is no GPU backend in this version.
 
 ## Download and install
 
 You do not need to build anything.
 
-1. Open the project's **Releases** page and download `VRChatUniversalTranslator-1.1.2-win-x64-portable.zip` and `SHA256SUMS.txt`.
+1. Open the project's **Releases** page and download `VRChatUniversalTranslator-1.1.3-win-x64-portable.zip` and `SHA256SUMS.txt`.
 2. Check the download. In PowerShell:
    ```powershell
-   Get-FileHash .\VRChatUniversalTranslator-1.1.2-win-x64-portable.zip -Algorithm SHA256
+   Get-FileHash .\VRChatUniversalTranslator-1.1.3-win-x64-portable.zip -Algorithm SHA256
    ```
    The hash must match the line for that file in `SHA256SUMS.txt`.
 3. Extract the whole ZIP to a folder and keep the files together. The build is self-contained; no separate .NET install is needed.

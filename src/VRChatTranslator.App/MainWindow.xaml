@@ -82,6 +82,10 @@
 <CheckBox Content="Optional speaker labels (experimental, session-only)" IsChecked="{Binding SpeakerLabelsEnabled}" Margin="0,16,0,0"/>
 <Button Content="Download optional speaker model" Click="OnDownloadSpeakersClick" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
 <TextBlock Text="Off means no speaker analysis. Labels are estimates, not VRChat usernames; crowded worlds and overlapping voices can be uncertain." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,5,0,0"/>
+<CheckBox x:Name="FastEnglishCheck" Content="Fast English captions (experimental, off by default)" IsChecked="{Binding FastEnglishEnabled}" Checked="OnFastEnglishToggled" Unchecked="OnFastEnglishToggled" Margin="0,16,0,0"/>
+<TextBlock Text="{Binding FastEnglishStatus}" TextWrapping="Wrap" Foreground="{StaticResource AccentBrush}" Margin="0,5,0,0"/>
+<Button x:Name="FastEnglishDownloadButton" Content="{Binding FastEnglishButtonText}" IsEnabled="{Binding CanDownloadFastEnglish}" Click="OnDownloadFastEnglishClick" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+<TextBlock x:Name="FastEnglishExplanation" TextWrapping="Wrap" Foreground="{StaticResource MutedTextBrush}" Margin="0,5,0,0"/>
 <TextBlock Text="Recognition hints (comma-separated names or terms; not replacements)" Margin="0,14,0,6"/><TextBox Text="{Binding RecognitionHints, UpdateSourceTrigger=PropertyChanged}" MaxLength="1000"/>
 <TextBlock Text="Editable word corrections" FontSize="22" FontWeight="SemiBold" Margin="0,22,0,10"/>
 <ListBox x:Name="CorrectionList" ItemsSource="{Binding Corrections}" Height="120" SelectionChanged="OnCorrectionSelectionChanged"/>

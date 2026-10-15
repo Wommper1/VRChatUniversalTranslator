@@ -27,6 +27,7 @@ Downloads happen only when you click a download or setup button, never in the ba
 | --- | --- | --- | --- |
 | Downloading a speech model (Settings) | Hugging Face, `ggerganov/whisper.cpp`, through the Whisper.net library | `ggml-tiny.bin`, `ggml-base.bin` or `ggml-small.bin` | Exact size and SHA-256 built into the app; a mismatch is deleted and refused |
 | Turning on speaker labels (optional) | GitHub, `k2-fsa/sherpa-onnx` release `speaker-recongition-models` | One ONNX model file | Exact size and SHA-256 built into the app |
+| Turning on fast English captions (optional, Settings) | GitHub, `k2-fsa/sherpa-onnx` release `asr-models` (GitHub then serves the file from its own download hosts); the small `ggml-tiny.bin` language-check model comes from Hugging Face as above | One 104 MB archive holding the NVIDIA Parakeet 110M English model (and `ggml-tiny.bin` if missing) | The archive is checked against its exact size and SHA-256 before it is opened; only two files are unpacked from it (nothing else is written), and each is checked again |
 | Setting up language tools (Replies tab, optional) | `api.nuget.org` | An isolated CPython 3.13.15 runtime | SHA-512 built into the setup script |
 | Same setup | `pypi.org` / `files.pythonhosted.org` | 14 Python packages (the translation libraries and their dependencies) | Every package is pinned by SHA-256 in `requirements-translation.txt`; `pip --require-hashes` refuses anything else |
 | Downloading a language pack (Replies tab, optional) | `raw.githubusercontent.com` (the Argos package index), then `argos-net.com` | A language-pair model | HTTPS to that host only, no redirects, size and file-count limits. The index publishes no checksums, so these packs are trusted as far as that index and host are trusted |
@@ -36,7 +37,7 @@ Everything is downloaded into `%LOCALAPPDATA%\TheLevelEverythingCompany\VRChatUn
 ## Files kept on this PC
 
 - `config.json`: your settings (language, caption look, shortcuts, word corrections, recognition hints). No captions, no audio.
-- `models\`: the downloaded speech and speaker models.
+- `models\`: the downloaded speech and speaker models, and, if you chose fast English captions, its model files in `models\parakeet-110m-int8\`.
 - `translation\`: the isolated Python runtime and language packs, if you set them up.
 - `logs\`: a small daily diagnostic log (start/stop, errors, performance numbers, which shortcut or tray action was used, and the mode and language codes you applied). It never contains caption text, audio, your vocabulary or your corrections. Logs older than 14 days are deleted automatically and one day's log stops growing at 5 MB.
 

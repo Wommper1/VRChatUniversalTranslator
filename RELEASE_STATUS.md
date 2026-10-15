@@ -1,18 +1,19 @@
-# Release status — VRChat Universal Translator 1.1.2
+# Release status — VRChat Universal Translator 1.1.3
 
-Updated: 2026-10-12
+Updated: 2026-10-15
 
 ## Where things stand
 
 - The repository is public, MIT-licensed (Copyright 2026 The Level Everything Company), with README, SECURITY, CONTRIBUTING, a code of conduct, issue forms, a pull-request template, a CI workflow and Dependabot.
-- Releases **1.1.0** and **1.1.1** are published as **pre-releases**. **1.1.2** is the next pre-release: it carries the fixes from the first real-world session (first-run help when the speech model is missing, one copy at a time, clearer logs); see [RELEASE_NOTES.md](RELEASE_NOTES.md).
-- What was tested, and what was not, is in [VERIFICATION.md](VERIFICATION.md). The 2026-10-12 real-world session ran 1.1.1; the problems it found are fixed in 1.1.2.
+- Releases **1.1.0**, **1.1.1** and **1.1.2** are published as **pre-releases**. **1.1.3** is the next pre-release: it makes captions faster (an optional fast English engine, a faster Whisper setting for Balanced and Responsive CPU) and stops dropped speech being silent; see [RELEASE_NOTES.md](RELEASE_NOTES.md).
+- What was tested, and what was not, is in [VERIFICATION.md](VERIFICATION.md). The new fast English engine was measured on test recordings only and has not yet been run in a live VRChat lobby.
 - The portable ZIP contains the app, README, QUICK_START, PRIVACY, SECURITY, RELEASE_NOTES, THIRD_PARTY_NOTICES, VERIFICATION, LICENSE and the third-party `licenses\` folder. It contains no settings, models, logs or keys, and the DLLs and symbol files do not embed the local path of whoever built them.
 - `artifacts/` is git-ignored on purpose: the ZIP is attached to a GitHub Release, never committed. Its SHA-256 is published in `SHA256SUMS.txt` beside it, not recorded in this file.
 
 ## Not yet done (say so on every release)
 
 - **Real-world acceptance, partly done.** On 2026-10-12 live VRChat captioning, the model download, the four global shortcuts, saved settings and the app's load were checked on a real PC (see [VERIFICATION.md](VERIFICATION.md)). Still not run: the SteamVR headset overlay, OSC replies to a live chatbox, a physical phone through the router and firewall, caption accuracy and false captions, other languages, language packs and speaker labels. Use `ACCEPTANCE_CHECKLIST.md` for those. Until they are done, publish releases as **pre-releases**.
+- **Fast English captions in a real lobby.** Measured on read-aloud test recordings and a small multilingual set only; its accuracy on real lobby chatter, accented English and very short utterances is not known, and the in-app download button was not exercised end to end before this release was prepared. It is off by default and labelled experimental.
 - **Code signing.** The executable is unsigned, so Windows SmartScreen may warn. The hash in `SHA256SUMS.txt` is the user's check.
 - **Independent security testing.** None has been done.
 
@@ -28,7 +29,12 @@ The application remains truthfully CPU-only. GPU acceleration is a future engine
 6. Create the release: tag `vX.Y.Z` on that commit, tick **Set as a pre-release** until acceptance is done, attach the ZIP and `SHA256SUMS.txt`.
 7. Download the ZIP from the release page as a stranger would and check that its hash matches.
 
-## What changed since 1.1.1
+## What changed since 1.1.2
+
+- Optional fast English captions (Parakeet 110M, off by default) with a language check so other languages stay with Whisper; Balanced and Responsive CPU use a shorter Whisper audio context (about 30% faster); skipped speech is shown instead of vanishing and the last waiting segment is recognised late rather than dropped; invented stock-phrase captions are filtered; Apply saves the performance mode.
+- New dependency SharpZipLib 1.4.2 (MIT). 72 automated checks (53 in 1.1.2).
+
+## What changed in 1.1.2 compared with 1.1.1
 
 - With no speech model installed, the app says so on every tab and opens Settings at the download button once per listening session (before, it said "Listening" while nothing could be captioned).
 - A second launch shows the running copy instead of starting another.

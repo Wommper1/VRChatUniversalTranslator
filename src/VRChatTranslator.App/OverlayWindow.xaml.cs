@@ -24,6 +24,7 @@ public partial class OverlayWindow : Window
     private const uint KeyO = 0x4F;
     private const int HotkeyMessage = 0x0312;
     private readonly DispatcherTimer _fadeTimer;
+    private readonly DispatcherTimer _skipTimer;
     private IntPtr _handle;
     private bool _clickThrough = true;
     private OverlaySettings _preferences = new();
@@ -35,6 +36,8 @@ public partial class OverlayWindow : Window
         InitializeComponent();
         _fadeTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(6) };
         _fadeTimer.Tick += OnFadeTimerTick;
+        _skipTimer = new DispatcherTimer();
+        _skipTimer.Tick += OnSkipTimerTick;
         SourceInitialized += OnSourceInitialized;
         Closed += OnClosed;
         Left = Math.Max(0, (SystemParameters.PrimaryScreenWidth - Width) / 2);
@@ -61,6 +64,31 @@ public partial class OverlayWindow : Window
         _fadeTimer.Interval = TimeSpan.FromSeconds(Math.Clamp(_preferences.CaptionDurationSeconds, 2, 30));
         _fadeTimer.Start();
     }
+
+    /// <summary>
+    /// Shows a short amber note under the caption (or alone when nothing is showing) saying some speech was skipped.
+    /// It hides itself and never changes or delays a caption.
+    /// </summary>
+    public void ShowSkipNotice(string text, double seconds = 4)
+    {
+        var captionVisible = _fadeTimer.IsEnabled;
+        SkipText.Text = text;
+        SkipText.Visibility = Visibility.Visible;
+        _skipTimer.Stop();
+        _skipTimer.Interval = TimeSpan.FromSeconds(Math.Clamp(seconds, 1, 10));
+        _skipTimer.Start();
+        if (captionVisible || !_clickThrough)
+        {
+            if (_lastCaption is not null) FitCaption();
+            return;
+        }
+
+        ClearCaption();
+        CaptionPanel.BeginAnimation(OpacityProperty, null);
+        CaptionPanel.Opacity = 1;
+    }
+
+    public bool IsSkipNoticeVisible => SkipText.Visibility == Visibility.Visible;
 
     public void SetClickThrough(bool enabled)
     {
@@ -172,7 +200,19 @@ public partial class OverlayWindow : Window
     private void OnFadeTimerTick(object? sender, EventArgs e)
     {
         _fadeTimer.Stop();
+        if (_skipTimer.IsEnabled) return; // the skip note is still showing; its timer fades the panel
         CaptionPanel.BeginAnimation(OpacityProperty, new DoubleAnimation(0, TimeSpan.FromMilliseconds(550)));
+    }
+
+    private void OnSkipTimerTick(object? sender, EventArgs e)
+    {
+        _skipTimer.Stop();
+        SkipText.Text = "";
+        SkipText.Visibility = Visibility.Collapsed;
+        if (!_fadeTimer.IsEnabled && _clickThrough)
+        {
+            CaptionPanel.BeginAnimation(OpacityProperty, new DoubleAnimation(0, TimeSpan.FromMilliseconds(550)));
+        }
     }
 
     [LibraryImport("user32.dll", SetLastError = true)]

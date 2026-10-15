@@ -1,6 +1,24 @@
-# Verification — versions 1.1.0, 1.1.1 and 1.1.2
+# Verification — versions 1.1.0 to 1.1.3
 
 This records what was actually run and what was not. It is not a claim of bug-free or fully hardware-accepted software; see "Not verified" below.
+
+## Release 1.1.3, 2026-10-15
+
+1.1.3 makes captions faster and stops dropped speech being silent (see [RELEASE_NOTES.md](RELEASE_NOTES.md)). What was run on the build PC:
+
+| Check | Result |
+| --- | --- |
+| Debug and Release build, warnings as errors | 0 warnings, 0 errors |
+| Automated checks | 72/72 (53 in 1.1.2, plus 19 new: the speech queue and skipped-speech note, the audio-context presets, the fast English installer and its safety rules, the language routing, the fast engine captioning without Whisper). The safety rules (unsafe archive paths, wrong size or checksum, missing file, a locked non-English language, the queue keeping the newest speech, the stale-segment rule) were each deliberately broken once to confirm a check fails |
+| WPF `--smoke-test` and `--phone-self-test` | pass, both from source and from the extracted ZIP; the smoke test now also checks the skipped-speech overlay note and the fast English Settings text and states |
+| One-copy check with the extracted executable | the first copy started; two further launches each exited with code 0 in 264 ms in total; exactly one copy stayed running and closed when asked |
+| The app's own fast English installer, run for real | downloaded the Parakeet archive from GitHub into an empty folder in 12.4 s; the archive and both extracted files matched their pinned size and SHA-256; only `model.int8.onnx` and `tokens.txt` were written; the recogniser started from them; a second request did nothing. Run with the development command `--check-fast-english-download`; a person clicking the Settings button in the finished app has not yet been done |
+| Known-vulnerable packages | none (including the new SharpZipLib 1.4.2) |
+| Package contents | 659 files. Compared file by file with the 1.1.2 package: 3 added (the SharpZipLib library and its licence, the NVIDIA attribution notice), none removed, 17 changed: seven documents and the app's own assemblies and manifest, which carry the version number. No other third-party file changed |
+| Scan of every file in the package for a user name, machine path, repository path or source-link data | none |
+| Files in the package that look like settings, models, logs or keys | none |
+
+Not run for this release: a live VRChat session with the fast English engine (it was measured on test recordings only), the SteamVR headset, typed replies to the VRChat chatbox, a physical phone, language packs, and speaker labels. The audio capture code is unchanged since 1.1.1, so `--capture-proof` was not re-run.
 
 ## Crowd accuracy evaluation, 2026-10-13 (development measurements on the 1.1.2 code)
 
@@ -20,6 +38,40 @@ Findings:
 - A shorter wait before closing a segment (250 ms instead of 350 ms) made delay and accuracy worse, not better.
 
 Limits: fake crowds built from clean read speech, two clips per size, English only, one PC, delays vary by about 0.3 s from run to run with whatever else the PC is doing, and the stereo positions are an assumption about VRChat's spatial audio that has not been checked against a real lobby recording.
+
+## Speed and fast-English evaluation, 2026-10-14 (development measurements)
+
+Purpose: find out whether captions can be made clearly faster without losing accuracy. Method: a second, different fake-crowd set (seed 777; the same recipe as above, different voices), played in real time through the real speech pipeline, Balanced preset (base model, 4 threads, loudness gate). Three single-voice clips (about 28 s each), three 3-voice clips (about 29 s each) and the three non-speech clips. "Recognition" is the time the engine spent on one segment; "end to caption" is from the speaker stopping to the caption appearing (it includes the 0.35 s the app waits to be sure the speaker has stopped). One PC (Ryzen 7 5800X), delays vary by about 0.3 s from run to run.
+
+| Engine / setting | Recognition | End to caption | Word errors, 1 voice | Word errors, 3 voices | False captions on noise |
+| --- | --- | --- | --- | --- | --- |
+| Whisper base (today's Balanced) | about 1.73 s | about 2.07 s | 5.9% | 57.4% | 0 |
+| Whisper base, audio context 768 | about 1.20 s | about 1.55 s | 6.8% | 57.3% | 0 |
+| Whisper base, audio context 512 | about 1.08 s | about 1.41 s | 8.4% | 54.0% | not run |
+| Whisper base, audio context 384 | about 1.06 s | about 1.39 s | 8.4% | 47.8% | not run |
+| Whisper base compressed (q5_1) | about 2.0 s (slower) | about 2.4 s | 6.8% | 51.2% | not run |
+| Whisper base compressed (q5_1), audio context 768 | about 1.4 s | about 1.75 s | 8.0% | 55.0% | not run |
+| Parakeet 110M int8 (English only) | about 0.06 s | about 0.40 s | 3.8% | 34.4% | 0 |
+| Hybrid: Parakeet for English, language check by Whisper base, audio context 384 | about 0.9 s | about 1.26 s | 3.9% (1 voice only) | not run | not run |
+| Hybrid: Parakeet for English, language check by Whisper tiny | about 0.46 s | about 0.80 s | 3.9% (1 voice only) | not run | not run |
+
+Findings:
+
+- The compressed Whisper model (q5_1) is smaller to download but not faster on this CPU: about 15% slower. It is not used.
+- Shrinking Whisper's audio context to 768 made recognition about 30% faster and produced no false captions on the noise clips. On the first three single-voice clips it cost about one point of word errors (5.9% to 6.8%). A confirmation on two more single-voice clips from the first crowd set, with the preset default, showed it about 35% faster with no extra errors (0.0% and 6.2% against 8.6% and 6.2%); over all five clips the mean was 5.3% with 768 and 6.5% without. Below 768 accuracy fell without much more speed. Five single-voice clips is still a small sample. Balanced and Responsive CPU (base model) now use 768; the others keep Whisper's default because they were not measured.
+- Parakeet is far faster (the recogniser itself takes about 60 ms) and made fewer errors on these clips. The caption appears about 0.4 s after speech ends, almost all of which is the app's own wait to see whether the speaker has stopped. On the noise clips it produced no false captions (the quality filter dropped every empty or stock result).
+- Parakeet is English only. It is used only for English: either the spoken language is locked to English, or a language check on the segment says English with at least 85% confidence. In all 25 English segments of the three single-voice clips the check said English. The check itself costs a fixed 0.4 s with Whisper tiny (about 0.86 s with Whisper base) whatever the audio length, so on Auto-detect English captions arrive about 0.8 s after speech ends, against about 2.1 s for Whisper alone.
+
+Limits, stated plainly:
+
+- The speech is read-aloud audiobook text. NVIDIA's training data for Parakeet includes LibriSpeech-style speech, so these clips favour Parakeet more than real VRChat chatter would. The speed advantage is real; the size of the accuracy advantage on real lobby speech is not known until a real lobby recording is measured.
+- Language check on other languages (measured 2026-10-15): three real read-speech clips each (public FLEURS set, CC-BY-4.0, first few megabytes of each language's development archive) in Mandarin, German, Spanish (Latin American), French, Japanese, Korean, Portuguese (Brazil) and Russian, 24 clips and 61 segments in all, played through the hybrid with the spoken language on Auto-detect and the Whisper tiny language check. **None of the 61 segments went to the English-only engine; Whisper captioned all of them** with sensible English translations. This is a small sample: it does not show what happens with accented English, English with foreign words, or very short utterances, and the 85% confidence threshold was not tuned on it. Non-English captions are about 0.4 s slower in the hybrid than with Whisper alone, because the language check runs first.
+- Parakeet has no confidence score, so the confidence-based part of the caption filter cannot apply to it; the text-based filters still do.
+- The hybrid rows were run on the single-voice clips only.
+
+## Skipped speech made visible, 2026-10-14
+
+When the recogniser falls behind, speech is now skipped visibly instead of silently, and the last waiting segment is recognised late instead of being dropped after 6 seconds. Checked by four automated checks (queue policy, full queue drops the oldest and reports it, old speech is skipped only when newer speech waits, notice text and rate limit), each shown to fail when its rule is deliberately broken, and by the window self-test (the overlay note appears). The Balanced preset keeps only two waiting segments; in the real lobby session of 2026-10-12 the queue stood at 1 or 2 for most samples, so speech was very likely being dropped without any sign. The amount that was dropped then cannot be known: the old build did not record it.
 
 ## Release 1.1.2, 2026-10-12
 

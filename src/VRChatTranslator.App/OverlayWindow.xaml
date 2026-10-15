@@ -35,6 +35,14 @@
                    TextWrapping="Wrap"
                    TextAlignment="Center" />
         <TextBlock x:Name="OriginalText" Margin="0,8,0,0" Foreground="#FFB9C5D8" FontSize="23" TextWrapping="Wrap" TextAlignment="Center" />
+        <TextBlock x:Name="SkipText"
+                   Margin="0,9,0,0"
+                   Foreground="#FFF2C14E"
+                   FontSize="14"
+                   FontWeight="SemiBold"
+                   TextAlignment="Center"
+                   TextWrapping="Wrap"
+                   Visibility="Collapsed" />
         <TextBlock x:Name="InteractionHint"
                    Margin="0,9,0,0"
                    Foreground="#FF99A4B7"
