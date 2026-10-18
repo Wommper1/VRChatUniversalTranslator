@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NAudio.Wasapi" Version="3.1.0" />
+    <PackageReference Include="NAudio.Wasapi" Version="3.2.0" />
     <ProjectReference Include="..\VRChatTranslator.Core\VRChatTranslator.Core.csproj" />
   </ItemGroup>
 </Project>
