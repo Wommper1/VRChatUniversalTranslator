@@ -27,7 +27,7 @@ Exit evidence: the detector refreshes immediately and every second, selects the 
 
 Implementation evidence on the target Windows 11 PC:
 
-- Stable `NAudio.Wasapi` 3.2.0 calls `ActivateAudioInterfaceAsync` with the target PID and `IncludeTargetProcessTree`.
+- Stable `NAudio.Wasapi` 3.3.0 calls `ActivateAudioInterfaceAsync` with the target PID and `IncludeTargetProcessTree`.
 - Capture negotiates 48 kHz, stereo, 32-bit IEEE float with a 50 ms event-driven buffer.
 - PCM enters a newest-first bounded 64-chunk channel; dropped chunks are counted instead of allowing unlimited backlog.
 - An automated two-source proof selected a silent process while an unrelated process played a tone: captured peak remained `0.000%`.
