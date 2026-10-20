@@ -14,7 +14,7 @@ Updated: 2026-10-20 (after publishing 1.1.4)
 
 - **Real-world acceptance, partly done.** On 2026-10-12 live VRChat captioning, the model download, the four global shortcuts, saved settings and the app's load were checked on a real PC (see [VERIFICATION.md](VERIFICATION.md)). Still not run: the SteamVR headset overlay, OSC replies to a live chatbox, a physical phone through the router and firewall, caption accuracy and false captions, other languages, language packs and speaker labels. Use `ACCEPTANCE_CHECKLIST.md` for those. Until they are done, publish releases as **pre-releases**.
 - **Fast English captions in a real lobby.** Measured on read-aloud test recordings and a small multilingual set only; its accuracy on real lobby chatter, accented English and very short utterances is not known, and nobody has yet clicked the Settings download button in the finished app (the app's own installer was run for real in a test: 12.4 s, checksums matched). It is off by default and labelled experimental.
-- **Code signing.** The executable is unsigned, so Windows SmartScreen may warn. The hash in `SHA256SUMS.txt` is the user's check.
+- **Code signing.** The executable is unsigned, so Windows SmartScreen may warn. The hash in `SHA256SUMS.txt` is the user's check. A free signing route through SignPath Foundation is prepared (the Release workflow, `.signpath/` and [docs/SIGNPATH_SETUP.md](docs/SIGNPATH_SETUP.md)) but has not been applied for, so nothing is signed yet.
 - **Independent security testing.** None has been done.
 
 The application remains truthfully CPU-only. GPU acceleration is a future engineering goal, not a release blocker.
@@ -28,6 +28,10 @@ The application remains truthfully CPU-only. GPU acceleration is a future engine
 5. Write `SHA256SUMS.txt` (`<hash>  <zip file name>`), commit, push, and wait for CI to be green.
 6. Create the release: tag `vX.Y.Z` on that commit, tick **Set as a pre-release** until acceptance is done, attach the ZIP and `SHA256SUMS.txt`.
 7. Download the ZIP from the release page as a stranger would and check that its hash matches.
+
+## Making a release with the Release workflow (alternative to the steps above)
+
+Steps 1 to 5 are the same (version, notes, checks, merged by pull request). Then tag the merged commit and push the tag (`git tag vX.Y.Z`, `git push origin vX.Y.Z`). The [Release workflow](.github/workflows/release.yml) builds the package on GitHub, runs the checks, checks the package for personal data, signs it if SignPath is switched on, and creates a **draft pre-release** with the ZIP and `SHA256SUMS.txt`. You still read the draft, download it and check it as in step 7, then publish it by hand. A package built this way is not byte-identical to one built on your PC (file times differ), so the hash that counts is the one in the draft.
 
 ## What changed in 1.1.4 compared with 1.1.3
 

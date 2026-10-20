@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SignPath artifact configuration for the portable package. Paste this into the SignPath project as its default artifact
+  configuration (docs/SIGNPATH_SETUP.md says where). It is not read by anything in this repository.
+
+  What it says
+  * The artifact is the ZIP that GitHub makes from the package folder, so the root element is zip-file.
+  * Only the app's OWN five files are signed. SignPath Foundation signs only binaries built from the project's own source;
+    NAudio, Whisper.net, the .NET runtime, OpenVR and the other third-party files keep their own signatures and are left alone.
+  * Metadata restrictions: SignPath refuses to sign a file whose product name or product version is not exactly as written.
+    The app's files carry version ${version} (a parameter filled in by the workflow from the app's <Version>); the three
+    library projects have never had a version of their own and say 1.0.0. If that ever changes, change it here too.
+  * The commit id is deliberately left out of the version in the file properties (scripts/build-release.ps1), so the
+    version is identical across builds of a release, as the SignPath Foundation terms require.
+-->
+<artifact-configuration xmlns="http://signpath.io/artifact-configuration/v1">
+  <parameters>
+    <parameter name="version" required="true" />
+  </parameters>
+  <zip-file>
+    <pe-file path="VRChatUniversalTranslator.exe" product-name="VRChat Universal Translator" product-version="${version}">
+      <authenticode-sign />
+    </pe-file>
+    <pe-file path="VRChatUniversalTranslator.dll" product-name="VRChat Universal Translator" product-version="${version}">
+      <authenticode-sign />
+    </pe-file>
+    <pe-file path="VRChatTranslator.Core.dll" product-name="VRChat Universal Translator" product-version="1.0.0">
+      <authenticode-sign />
+    </pe-file>
+    <pe-file path="VRChatTranslator.Audio.dll" product-name="VRChat Universal Translator" product-version="1.0.0">
+      <authenticode-sign />
+    </pe-file>
+    <pe-file path="VRChatTranslator.Speech.dll" product-name="VRChat Universal Translator" product-version="1.0.0">
+      <authenticode-sign />
+    </pe-file>
+  </zip-file>
+</artifact-configuration>
