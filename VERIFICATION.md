@@ -1,6 +1,23 @@
-# Verification — versions 1.1.0 to 1.1.3
+# Verification — versions 1.1.0 to 1.1.4
 
 This records what was actually run and what was not. It is not a claim of bug-free or fully hardware-accepted software; see "Not verified" below.
+
+## Release 1.1.4, 2026-10-20
+
+1.1.4 changes one library and nothing else in the app: NAudio.Wasapi 3.1.0 to 3.2.0 (audio capture). NAudio 3.2.0's release notes list macOS support, VB.NET helpers, deprecations of old playback and WAV helper APIs, and fixes to `WasapiPlayer`, `WasapiOut` and `DirectSoundOut`. This app uses none of those: its packaged code uses only `WasapiRecorderBuilder` (per-process capture), `WaveFormat` and `ToSampleProvider`, and only its own test tools use `WaveFileReader` (not the deprecated `ReadNextSampleFrame`). What was run on the build PC (Windows 11, .NET SDK 10.0.401):
+
+| Check | Result |
+| --- | --- |
+| Debug build and Release package build, warnings as errors | 0 warnings, 0 errors |
+| Automated checks | 72/72 (same as 1.1.3) |
+| WPF `--smoke-test` and `--phone-self-test` | pass, both from source and from the extracted ZIP; the extracted executable reports file version 1.1.4.0 and NAudio.Wasapi 3.2.0 |
+| Real WASAPI process capture (`--capture-proof`, two short test tones) | selected process 14.999%, unrelated process 0.000% (identical to 1.1.1 with NAudio 3.1.0) |
+| Known-vulnerable packages | none in any project |
+| Package contents | 659 files, the same file list as the published 1.1.3 package: none added, none removed, 21 differ. Twelve are the NAudio libraries (`NAudio.Core.dll`, `NAudio.Wasapi.dll`) and the app's own assemblies, symbol files and manifest, which carry the version number. Nine are documents: four with real text changes (README, SECURITY, RELEASE_NOTES, VERIFICATION) and five whose text is identical to 1.1.3 and differ only in line endings (PRIVACY, QUICK_START, THIRD_PARTY_NOTICES and two licence files; the build PC's Git checks files out with Windows line endings). No other third-party file changed |
+| Scan of every file in the package for a user name, machine path, repository path, e-mail address or source-link data (ASCII and UTF-16) | none in any file the app owns. The word "sourcelink" appears inside `Microsoft.DiaSymReader.Native.amd64.dll`, a Microsoft native library that is byte-identical to the one in the published 1.1.3 package |
+| Files in the package that look like settings, models, logs or keys | none (only `VRChatUniversalTranslator.runtimeconfig.json`, the .NET runtime configuration) |
+
+Not run for this release: a live VRChat session, the SteamVR headset, typed replies to the VRChat chatbox, a physical phone, language packs, speaker labels, and the one-copy check with the extracted executable (the code that does it did not change). Everything that was not verified for 1.1.3 still is not.
 
 ## Release 1.1.3, 2026-10-15
 
@@ -217,7 +234,7 @@ The items below are covered step by step in [ACCEPTANCE_CHECKLIST.md](ACCEPTANCE
 
 - **Native SteamVR captions and dashboard controls** — never run with a physical headset. Experimental.
 - **Speaker labels** — off by default; the speaker pipeline checks (`--speaker-test`) and the real-audio pipeline check (`--pipeline-test`) were not re-run because the model and fixtures are not on this PC.
-- **Process-only capture proof** (`--capture-proof`) — plays audible tones through Windows; not run.
+- **Process-only capture proof** (`--capture-proof`) — plays audible tones through Windows; run for 1.1.1 and again for 1.1.4 (same result both times), not re-run for 1.1.2 or 1.1.3, whose capture code is unchanged.
 - **False-caption behavior and caption accuracy** in real VRChat — latency was measured on 2026-10-12 (see above) but accuracy and false captions were not scored.
 - **Tray menu behavior while VRChat has focus** — the four global shortcuts were exercised on 2026-10-12; the tray menu, the shortcut-conflict message and close-to-tray were only reported as working.
 - **Explicit OSC reply sending** to a live VRChat session.
