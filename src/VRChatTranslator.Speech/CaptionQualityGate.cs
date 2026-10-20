@@ -38,7 +38,23 @@ public static class CaptionQualityGate
         if (NonSpeech.Contains(marker) || !text.Any(char.IsLetterOrDigit)) return true;
         var words = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         if (words.Length >= 8 && words.GroupBy(w => w, StringComparer.OrdinalIgnoreCase).Max(g => g.Count()) >= words.Length * 0.8) return true;
-        return IsStockVideoPhrase(text) || HasLoopedSentence(text);
+        return IsSoundAnnotation(text) || IsStockVideoPhrase(text) || HasLoopedSentence(text);
+    }
+
+    /// <summary>
+    /// True when the whole caption is one short bracketed sound note such as "(upbeat music)", "[MUSIC PLAYING]" or "*sighs*".
+    /// The recogniser writes these for sound that is not speech; a sentence that merely contains brackets is never matched.
+    /// </summary>
+    public static bool IsSoundAnnotation(string text)
+    {
+        text = Normalize(text).TrimEnd('.', '!', '?', ' ');
+        if (text.Length < 3 || text.Length > 60) return false;
+        var close = text[0] switch { '[' => ']', '(' => ')', '*' => '*', _ => '\0' };
+        if (close == '\0' || text[^1] != close) return false;
+        var inner = text[1..^1];
+        if (inner.IndexOfAny(['[', ']', '(', ')', '*']) >= 0) return false;
+        var wordCount = Words(inner).Count();
+        return wordCount is >= 1 and <= 5;
     }
 
     /// <summary>True when the caption is nothing but a stock video ending such as "Thanks for watching, please subscribe".</summary>
