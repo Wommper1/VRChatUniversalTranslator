@@ -118,6 +118,7 @@ internal static partial class Program
             ("phone display refuses a Host name this PC would not answer to", PhoneHostHeaderMustBeANameThisPcAnswersTo),
             ("phone display PINs are six digits and compared exactly", PhonePinsAreSixDigitsAndMatchExactly),
             ("phone display limits wrong PIN guesses per client", PhonePinAttemptsAreLimitedPerClient),
+            ("phone display PIN guessing cannot be spread across addresses or wiped by a flood", PhonePinGuessingCannotBeSpreadAcrossAddresses),
             ("phone display status keeps file paths off the phone", PhoneStatusKeepsFilePathsOffThePhone),
             ("app data lives in one company folder shared by every component", AppDataLivesInOneCompanyFolder),
             ("downloads are accepted only when size and SHA-256 match exactly", DownloadsAreAcceptedOnlyWhenTheyMatchExactly),

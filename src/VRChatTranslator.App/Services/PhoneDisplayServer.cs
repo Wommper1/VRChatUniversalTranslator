@@ -171,7 +171,7 @@ public sealed class PhoneDisplayServer(ICaptionHub captionHub, Func<PhoneStatusS
 
     private async Task StreamEventsAsync(HttpContext context)
     {
-        var client = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var client = PhoneAccessPolicy.ClientKey(context.Connection.RemoteIpAddress);
         var wait = _pinLimiter.RetryAfter(client, DateTimeOffset.UtcNow);
         if (wait > TimeSpan.Zero)
         {
