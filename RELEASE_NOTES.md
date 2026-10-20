@@ -1,3 +1,10 @@
+# 1.1.4 — library update
+
+- Updated NAudio.Wasapi (audio capture) from 3.1.0 to 3.2.0. NAudio 3.2.0 is mostly new features for other platforms and fixes to its playback classes (`WasapiPlayer`, `WasapiOut`, `DirectSoundOut`), which this app does not use. The app uses only `WasapiRecorderBuilder` (per-process capture of `VRChat.exe`), `WaveFormat`, and, in its own test tools, `WaveFileReader`. None of the APIs NAudio deprecated in 3.2.0 are used (the build treats warnings as errors and has none). The real audio-capture test gave the same result as before; see [VERIFICATION.md](VERIFICATION.md).
+- Nothing else in the app changed: no new features, no behavior changes. Settings, downloaded models and language packs carry over unchanged.
+- The repository also now ignores secret-looking files (`.env`, key and credential files) and requires its build check to pass before changes reach the main branch. Neither affects the app or the package.
+- The same real-VRChat, SteamVR and phone checks are still outstanding (see [ACCEPTANCE_CHECKLIST.md](ACCEPTANCE_CHECKLIST.md)), so this is still a pre-release.
+
 # 1.1.3 — faster captions: optional fast English engine, faster Whisper presets, skipped speech is shown
 
 This release is about the delay between someone speaking and the caption appearing, and about not losing speech silently. Settings, downloaded models and language packs carry over unchanged. It is a **pre-release**: the new fast English engine has been measured on test recordings (see [VERIFICATION.md](VERIFICATION.md)) but has **not yet been run in a live VRChat lobby**, and everything that was still outstanding in 1.1.2 (SteamVR headset captions, typed replies to the VRChat chatbox, the phone display on a physical phone, language packs, speaker labels, caption accuracy on real lobby speech) still is.
