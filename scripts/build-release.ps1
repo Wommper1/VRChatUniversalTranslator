@@ -18,8 +18,11 @@ try {
     # Map the build folder to /_/ so the DLLs and symbol files do not embed the local path of whoever built them.
     # SourceLink is switched off for the same reason: once the repository has a GitHub remote, the SDK would write the
     # local build folder (and the source URL) into the symbol files.
+    # The product version in each file's properties is then exactly x.y.z, the same for every build of a release. The commit id is
+    # left out on purpose: code-signing rules (SignPath) need the version to stay identical across builds, and the release tag already
+    # names the commit.
     $pathMap = "-p:PathMap=$($projectRoot.TrimEnd('\'))\=/_/"
-    dotnet publish .\src\VRChatTranslator.App\VRChatTranslator.App.csproj --configuration Release --runtime win-x64 --self-contained true --no-restore --output $outputPath $pathMap -p:EnableSourceLink=false
+    dotnet publish .\src\VRChatTranslator.App\VRChatTranslator.App.csproj --configuration Release --runtime win-x64 --self-contained true --no-restore --output $outputPath $pathMap -p:EnableSourceLink=false -p:IncludeSourceRevisionInInformationalVersion=false
     if ($LASTEXITCODE -ne 0) { throw 'Portable build failed.' }
     foreach ($name in @('README.md','QUICK_START.md','PRIVACY.md','RELEASE_NOTES.md','THIRD_PARTY_NOTICES.md','VERIFICATION.md','SECURITY.md','LICENSE')) {
         Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination $outputPath
