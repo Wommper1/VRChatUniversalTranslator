@@ -16,7 +16,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$lines = @(Get-Content -LiteralPath $NotesPath)
+$lines = @(Get-Content -LiteralPath $NotesPath -Encoding UTF8)
 $headings = @(for ($i = 0; $i -lt $lines.Count; $i++) { if ($lines[$i] -like '# *') { $i } })
 if ($headings.Count -eq 0 -or $lines[$headings[0]] -notlike "# $Version *") {
     throw "The first heading in $NotesPath must start with '# $Version '."

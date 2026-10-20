@@ -54,7 +54,7 @@ jobs:
           if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$version") {
             throw "The tag $env:GITHUB_REF_NAME does not match the app version $version in $projectFile."
           }
-          $firstHeading = Get-Content -LiteralPath RELEASE_NOTES.md | Where-Object { $_ -like '# *' } | Select-Object -First 1
+          $firstHeading = Get-Content -LiteralPath RELEASE_NOTES.md -Encoding UTF8 | Where-Object { $_ -like '# *' } | Select-Object -First 1
           if ($firstHeading -notlike "# $version *") {
             throw "The first heading in RELEASE_NOTES.md is '$firstHeading'; it must start with '# $version '."
           }
