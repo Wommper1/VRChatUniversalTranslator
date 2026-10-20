@@ -5,14 +5,14 @@
 <StackPanel><TextBlock Text="VRChat Universal Translator" FontSize="27" FontWeight="SemiBold"/><TextBlock Text="Understand the conversation. Stay in the moment." Foreground="{StaticResource MutedTextBrush}" Margin="0,5,0,0"/></StackPanel></DockPanel>
 <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,18" Padding="16"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
 <StackPanel VerticalAlignment="Center"><TextBlock Text="{Binding ListeningSummary}" FontSize="19" FontWeight="SemiBold"/><TextBlock Text="{Binding ListeningDetail}" TextWrapping="Wrap" Foreground="{StaticResource MutedTextBrush}" Margin="0,4,12,0"/>
-<ProgressBar Height="5" Margin="0,10,18,0" Value="{Binding AudioLevelPercent, Mode=OneWay}" Maximum="100" Foreground="{StaticResource AccentBrush}" Background="{StaticResource PanelLightBrush}"/></StackPanel>
+<ProgressBar AutomationProperties.Name="VRChat audio level" Height="5" Margin="0,10,18,0" Value="{Binding AudioLevelPercent, Mode=OneWay}" Maximum="100" Foreground="{StaticResource AccentBrush}" Background="{StaticResource PanelLightBrush}"/></StackPanel>
 <Button Grid.Column="1" MinWidth="180" VerticalAlignment="Center" Content="{Binding StartButtonText}" IsEnabled="{Binding CanToggleCapture}" Click="OnToggleCaptureClick"/>
 </Grid></Border>
 <TabControl x:Name="MainTabs" Grid.Row="2" Background="Transparent" BorderThickness="0">
 <TabItem Header="Live" x:Name="LiveTab"><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="0,16,0,0">
 <Grid Margin="0,0,0,16"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="18"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-<StackPanel><TextBlock Text="SPOKEN LANGUAGE" Foreground="{StaticResource MutedTextBrush}"/><ComboBox  ItemsSource="{Binding SourceLanguages}" SelectedItem="{Binding SourceLanguage}" Margin="0,6,0,0"/></StackPanel>
-<StackPanel Grid.Column="2"><TextBlock Text="TRANSLATE INTO" Foreground="{StaticResource MutedTextBrush}"/><ComboBox  ItemsSource="{Binding TargetLanguages}" SelectedItem="{Binding TargetLanguage}" Margin="0,6,0,0"/></StackPanel>
+<StackPanel><TextBlock Text="SPOKEN LANGUAGE" Foreground="{StaticResource MutedTextBrush}"/><ComboBox AutomationProperties.Name="Spoken language"  ItemsSource="{Binding SourceLanguages}" SelectedItem="{Binding SourceLanguage}" Margin="0,6,0,0"/></StackPanel>
+<StackPanel Grid.Column="2"><TextBlock Text="TRANSLATE INTO" Foreground="{StaticResource MutedTextBrush}"/><ComboBox AutomationProperties.Name="Translate into"  ItemsSource="{Binding TargetLanguages}" SelectedItem="{Binding TargetLanguage}" Margin="0,6,0,0"/></StackPanel>
 <Button Grid.Column="3" Content="Apply" Click="OnApplyPreferencesClick" Margin="14,18,0,0" VerticalAlignment="Bottom"/></Grid>
 <TextBlock x:Name="LivePackStatus" TextWrapping="Wrap" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,8"/>
 <Button Content="Language packs…" Click="OnOpenLanguagePacksClick" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,0,0,12"/>
@@ -25,8 +25,8 @@
 <TabItem Header="History" x:Name="HistoryTab"><Grid Margin="0,16,0,0"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
 <WrapPanel Margin="0,0,0,12"><CheckBox Content="Follow latest captions" IsChecked="{Binding AutoScrollHistory}" VerticalAlignment="Center" Margin="0,0,20,0"/>
 <Button Content="Copy selected" Click="OnCopyHistoryClick" Style="{StaticResource SecondaryButton}" Margin="0,8,8,0"/><Button Content="Clear history" Click="OnClearHistoryClick" Style="{StaticResource SecondaryButton}" Margin="0,8,8,0"/><TextBlock Text="Session only · not saved to disk" Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center" Margin="15,0,0,0"/>
-<TextBox x:Name="SpeakerName" Width="170" MaxLength="40" ToolTip="Optional session name for the selected numbered speaker" Margin="0,8,8,0"/><Button Content="Name selected speaker" Click="OnRenameSpeakerClick" Style="{StaticResource SecondaryButton}" Margin="0,8,8,0"/></WrapPanel>
-<ListBox x:Name="HistoryList" Grid.Row="1" ItemsSource="{Binding Conversation}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto">
+<TextBox AutomationProperties.Name="Speaker name" x:Name="SpeakerName" Width="170" MaxLength="40" ToolTip="Optional session name for the selected numbered speaker" Margin="0,8,8,0"/><Button Content="Name selected speaker" Click="OnRenameSpeakerClick" Style="{StaticResource SecondaryButton}" Margin="0,8,8,0"/></WrapPanel>
+<ListBox AutomationProperties.Name="Conversation history" x:Name="HistoryList" Grid.Row="1" ItemsSource="{Binding Conversation}" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto">
 <ListBox.ItemTemplate><DataTemplate><StackPanel Margin="10"><TextBlock Text="{Binding Heading}" Foreground="{StaticResource AccentBrush}"/>
 <TextBlock Text="{Binding Original}" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,6,0,0"
  Visibility="{Binding DataContext.ShowOriginalText, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
@@ -40,13 +40,13 @@
 <WrapPanel><Button Content="Set up local language tools" Click="OnSetupLanguageToolsClick" Style="{StaticResource SecondaryButton}" Margin="0,8,8,0"/>
 <Button Content="Install Live output-language pack" Click="OnInstallOutputClick" Style="{StaticResource SecondaryButton}" Margin="0,8,8,0"/></WrapPanel>
 <Grid Margin="0,18,0,10"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="20"/><ColumnDefinition/></Grid.ColumnDefinitions>
-<StackPanel><TextBlock Text="I write in"/><ComboBox x:Name="ReplySource" Margin="0,6,0,0"/></StackPanel>
-<StackPanel Grid.Column="2"><TextBlock Text="Reply in"/><ComboBox x:Name="ReplyTarget" Margin="0,6,0,0"/></StackPanel></Grid>
+<StackPanel><TextBlock Text="I write in"/><ComboBox AutomationProperties.Name="I write in" x:Name="ReplySource" Margin="0,6,0,0"/></StackPanel>
+<StackPanel Grid.Column="2"><TextBlock Text="Reply in"/><ComboBox AutomationProperties.Name="Reply in" x:Name="ReplyTarget" Margin="0,6,0,0"/></StackPanel></Grid>
 <Button Content="Install this reply pair" Click="OnInstallReplyPairClick" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left"/>
-<TextBlock Text="Your message" Margin="0,14,0,6"/><TextBox x:Name="ReplyInput" MaxLength="4000" Height="80" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+<TextBlock Text="Your message" Margin="0,14,0,6"/><TextBox AutomationProperties.Name="Your message" x:Name="ReplyInput" MaxLength="4000" Height="80" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
 <Button Content="Translate to preview" Click="OnTranslateReplyClick" HorizontalAlignment="Left" Margin="0,10,0,12"/>
 <TextBlock Text="Review &amp; edit the exact text to send (VRChat limit: 144 characters / 9 lines)" TextWrapping="Wrap"/>
-<TextBox x:Name="ReplyPreview" Height="100" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="0,6,0,12"/>
+<TextBox AutomationProperties.Name="Reviewed reply to send" x:Name="ReplyPreview" Height="100" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="0,6,0,12"/>
 <CheckBox x:Name="ReplyConsent" Content="Allow my explicit Send button to use local VRChat OSC" Checked="OnReplyConsentChanged" Unchecked="OnReplyConsentChanged"/>
 <TextBlock x:Name="OscStatusText" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="{StaticResource MutedTextBrush}" AutomationProperties.Name="VRChat OSC status"/>
 <TextBlock Text="Enable OSC in VRChat: Action Menu → Options → OSC. Sent replies may be visible to other players. UDP cannot confirm delivery; Copy works without OSC." TextWrapping="Wrap" Foreground="{StaticResource MutedTextBrush}" Margin="0,6,0,0"/>
@@ -73,10 +73,10 @@
 <TextBlock Text="Caption comfort" FontSize="22" FontWeight="SemiBold"/>
 <CheckBox Content="Show desktop overlay" IsChecked="{Binding OverlayEnabled}" Margin="0,12,0,0"/>
 <CheckBox Content="Show original text beside translation" IsChecked="{Binding ShowOriginalText}" Margin="0,10,0,0"/>
-<TextBlock Text="{Binding CaptionFontSize, StringFormat=Text size: {0}}" TextWrapping="Wrap" Margin="0,5,0,0"/><Slider Minimum="18" Maximum="64" Value="{Binding CaptionFontSize}"/><TextBlock Text="{Binding CaptionOpacity, StringFormat=Background opacity: {0}}" TextWrapping="Wrap" Margin="0,5,0,0"/><Slider Minimum="0.1" Maximum="1" Value="{Binding CaptionOpacity}"/><TextBlock Text="{Binding CaptionSeconds, StringFormat=Duration in seconds: {0}}" TextWrapping="Wrap" Margin="0,5,0,0"/><Slider Minimum="2" Maximum="30" Value="{Binding CaptionSeconds}"/>
+<TextBlock Text="{Binding CaptionFontSize, StringFormat=Text size: {0}}" TextWrapping="Wrap" Margin="0,5,0,0"/><Slider AutomationProperties.Name="Caption text size" Minimum="18" Maximum="64" Value="{Binding CaptionFontSize}"/><TextBlock Text="{Binding CaptionOpacity, StringFormat=Background opacity: {0}}" TextWrapping="Wrap" Margin="0,5,0,0"/><Slider AutomationProperties.Name="Caption background opacity" Minimum="0.1" Maximum="1" Value="{Binding CaptionOpacity}"/><TextBlock Text="{Binding CaptionSeconds, StringFormat=Duration in seconds: {0}}" TextWrapping="Wrap" Margin="0,5,0,0"/><Slider AutomationProperties.Name="Caption duration in seconds" Minimum="2" Maximum="30" Value="{Binding CaptionSeconds}"/>
 <WrapPanel><Button Content="Preview" Click="OnPreviewCaptionClick" Style="{StaticResource SecondaryButton}" Margin="0,8,8,0"/><Button Content="Unlock / lock overlay" Click="OnOverlayLockClick" Style="{StaticResource SecondaryButton}" Margin="0,8,8,0"/><Button Content="Reset placement" Click="OnResetOverlayClick" Style="{StaticResource SecondaryButton}" Margin="0,8,8,0"/></WrapPanel>
 <TextBlock Text="Recognition" FontSize="22" FontWeight="SemiBold" Margin="0,22,0,8"/>
-<ComboBox x:Name="PerformanceModeSelector" ItemsSource="{Binding PerformancePresets}" SelectedItem="{Binding SelectedPreset}" SelectionChanged="OnPerformanceModeChanged"/>
+<ComboBox AutomationProperties.Name="Performance mode" x:Name="PerformanceModeSelector" ItemsSource="{Binding PerformancePresets}" SelectedItem="{Binding SelectedPreset}" SelectionChanged="OnPerformanceModeChanged"/>
 <TextBlock Text="{Binding SelectedPreset.Description}" TextWrapping="Wrap" Margin="0,5,0,0"/><TextBlock Text="{Binding PresetRuntimeDetail}" TextWrapping="Wrap" Margin="0,5,0,0"/><TextBlock Text="{Binding SpeechModelStatus}" TextWrapping="Wrap" Margin="0,5,0,0"/>
 <Button Content="{Binding ModelButtonText}" IsEnabled="{Binding CanDownloadModel}" Click="OnDownloadModelClick" HorizontalAlignment="Left" Margin="0,10,0,0"/>
 <CheckBox Content="Optional speaker labels (experimental, session-only)" IsChecked="{Binding SpeakerLabelsEnabled}" Margin="0,16,0,0"/>
@@ -86,21 +86,21 @@
 <TextBlock Text="{Binding FastEnglishStatus}" TextWrapping="Wrap" Foreground="{StaticResource AccentBrush}" Margin="0,5,0,0"/>
 <Button x:Name="FastEnglishDownloadButton" Content="{Binding FastEnglishButtonText}" IsEnabled="{Binding CanDownloadFastEnglish}" Click="OnDownloadFastEnglishClick" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
 <TextBlock x:Name="FastEnglishExplanation" TextWrapping="Wrap" Foreground="{StaticResource MutedTextBrush}" Margin="0,5,0,0"/>
-<TextBlock Text="Recognition hints (comma-separated names or terms; not replacements)" Margin="0,14,0,6"/><TextBox Text="{Binding RecognitionHints, UpdateSourceTrigger=PropertyChanged}" MaxLength="1000"/>
+<TextBlock Text="Recognition hints (comma-separated names or terms; not replacements)" Margin="0,14,0,6"/><TextBox AutomationProperties.Name="Recognition hints" Text="{Binding RecognitionHints, UpdateSourceTrigger=PropertyChanged}" MaxLength="1000"/>
 <TextBlock Text="Editable word corrections" FontSize="22" FontWeight="SemiBold" Margin="0,22,0,10"/>
-<ListBox x:Name="CorrectionList" ItemsSource="{Binding Corrections}" Height="120" SelectionChanged="OnCorrectionSelectionChanged"/>
+<ListBox AutomationProperties.Name="Word corrections" x:Name="CorrectionList" ItemsSource="{Binding Corrections}" Height="120" SelectionChanged="OnCorrectionSelectionChanged"/>
 <Grid Margin="0,8,0,0"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="12"/><ColumnDefinition/></Grid.ColumnDefinitions>
-<StackPanel><TextBlock Text="Misheard word / phrase"/><TextBox x:Name="CorrectionFind" MaxLength="200" Margin="0,5,0,0"/></StackPanel>
-<StackPanel Grid.Column="2"><TextBlock Text="Replace with"/><TextBox x:Name="CorrectionReplace" MaxLength="200" Margin="0,5,0,0"/></StackPanel></Grid>
+<StackPanel><TextBlock Text="Misheard word / phrase"/><TextBox AutomationProperties.Name="Misheard word or phrase" x:Name="CorrectionFind" MaxLength="200" Margin="0,5,0,0"/></StackPanel>
+<StackPanel Grid.Column="2"><TextBlock Text="Replace with"/><TextBox AutomationProperties.Name="Replace with" x:Name="CorrectionReplace" MaxLength="200" Margin="0,5,0,0"/></StackPanel></Grid>
 <WrapPanel Margin="0,8,0,0"><CheckBox x:Name="CorrectionEnabled" Content="Enabled" IsChecked="True" VerticalAlignment="Center" Margin="0,0,15,0"/>
-<ComboBox x:Name="CorrectionScopeSelector" Width="160"/><Button Content="Add / update" Click="OnSaveCorrectionClick" Style="{StaticResource SecondaryButton}" Margin="0,8,8,0"/><Button Content="Remove" Click="OnRemoveCorrectionClick" Style="{StaticResource SecondaryButton}" Margin="0,8,8,0"/></WrapPanel>
-<TextBox x:Name="CorrectionSample" Text="Sam is visiting VRChat." Margin="0,10,0,0"/><Button Content="Preview corrections" Click="OnPreviewCorrectionClick" Style="{StaticResource SecondaryButton}" Margin="0,8,8,0"/>
+<ComboBox AutomationProperties.Name="Correction applies to" x:Name="CorrectionScopeSelector" Width="160"/><Button Content="Add / update" Click="OnSaveCorrectionClick" Style="{StaticResource SecondaryButton}" Margin="0,8,8,0"/><Button Content="Remove" Click="OnRemoveCorrectionClick" Style="{StaticResource SecondaryButton}" Margin="0,8,8,0"/></WrapPanel>
+<TextBox AutomationProperties.Name="Sample sentence for previewing corrections" x:Name="CorrectionSample" Text="Sam is visiting VRChat." Margin="0,10,0,0"/><Button Content="Preview corrections" Click="OnPreviewCorrectionClick" Style="{StaticResource SecondaryButton}" Margin="0,8,8,0"/>
 <TextBlock x:Name="CorrectionPreview" TextWrapping="Wrap" Margin="0,6,0,0"/>
 <TextBlock Text="Background operation &amp; shortcuts" FontSize="22" FontWeight="SemiBold" Margin="0,22,0,10"/>
 <CheckBox Content="Minimize to system tray" IsChecked="{Binding MinimizeToTray}"/><CheckBox Content="Close button hides to tray (Quit always exits)" IsChecked="{Binding CloseToTray}" Margin="0,8,0,0"/>
-<TextBlock Text="Start/Stop shortcut" Margin="0,12,0,4"/><TextBox Text="{Binding ListeningShortcut}"/>
-<TextBlock Text="Pause/Resume shortcut" Margin="0,8,0,4"/><TextBox Text="{Binding PauseShortcut}"/>
-<TextBlock Text="Show/Hide captions shortcut" Margin="0,8,0,4"/><TextBox Text="{Binding VisibilityShortcut}"/>
+<TextBlock Text="Start/Stop shortcut" Margin="0,12,0,4"/><TextBox AutomationProperties.Name="Start or stop listening shortcut" Text="{Binding ListeningShortcut}"/>
+<TextBlock Text="Pause/Resume shortcut" Margin="0,8,0,4"/><TextBox AutomationProperties.Name="Pause or resume shortcut" Text="{Binding PauseShortcut}"/>
+<TextBlock Text="Show/Hide captions shortcut" Margin="0,8,0,4"/><TextBox AutomationProperties.Name="Show or hide captions shortcut" Text="{Binding VisibilityShortcut}"/>
 <TextBlock Text="Ctrl+Alt+O locks/unlocks the desktop overlay. Shortcut conflicts are shown when settings are applied." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,8,0,12"/>
 <Button Content="Apply &amp; save settings" Click="OnApplyPreferencesClick" Margin="0,12,0,20"/>
 </StackPanel></ScrollViewer></TabItem>
@@ -111,9 +111,9 @@
 <WrapPanel><Button Content="Connect / reconnect" Click="OnConnectHeadsetClick" Margin="0,12,8,12"/><Button Content="Disconnect headset" Click="OnDisconnectHeadsetClick" Style="{StaticResource SecondaryButton}" Margin="0,12,8,12"/><Button Content="Preview captions" Click="OnPreviewCaptionClick" Style="{StaticResource SecondaryButton}" Margin="0,12,8,12"/></WrapPanel>
 <CheckBox x:Name="AutoConnectHeadset" Content="Connect to SteamVR automatically when the app starts" Checked="OnAutoConnectHeadsetChanged" Unchecked="OnAutoConnectHeadsetChanged"/>
 <TextBlock Text="Off by default. If SteamVR is not running yet, the app waits for it (checking every 5 to 30 seconds) and connects when it appears. Disconnect headset stops the waiting until the next start." TextWrapping="Wrap" Foreground="{StaticResource MutedTextBrush}" Margin="0,4,0,14"/>
-<TextBlock Text="Distance"/><Slider x:Name="HeadsetDistance" Minimum="0.6" Maximum="3" Value="1.5"/>
-<TextBlock Text="Vertical position"/><Slider x:Name="HeadsetHeight" Minimum="-1.2" Maximum="0.5" Value="-0.35"/>
-<TextBlock Text="Caption width"/><Slider x:Name="HeadsetWidth" Minimum="0.5" Maximum="2" Value="1.2"/>
+<TextBlock Text="Distance"/><Slider AutomationProperties.Name="Headset caption distance" x:Name="HeadsetDistance" Minimum="0.6" Maximum="3" Value="1.5"/>
+<TextBlock Text="Vertical position"/><Slider AutomationProperties.Name="Headset caption vertical position" x:Name="HeadsetHeight" Minimum="-1.2" Maximum="0.5" Value="-0.35"/>
+<TextBlock Text="Caption width"/><Slider AutomationProperties.Name="Headset caption width" x:Name="HeadsetWidth" Minimum="0.5" Maximum="2" Value="1.2"/>
 <WrapPanel><Button Content="Apply placement" Click="OnApplyHeadsetClick" Margin="0,12,8,12"/><Button Content="Reset placement" Click="OnResetHeadsetClick" Style="{StaticResource SecondaryButton}" Margin="0,12,8,12"/></WrapPanel>
 <TextBlock Text="In your headset: open the SteamVR dashboard and select Translator. Controller buttons there control listening, pause, caption visibility, distance, and height. Font, opacity, duration, and original text follow Caption comfort settings." TextWrapping="Wrap" Foreground="{StaticResource MutedTextBrush}"/>
 <TextBlock Text="Experimental until verified in your headset. Speaker labels and replies do not require SteamVR. Replies are never sent from dashboard controls." TextWrapping="Wrap" Foreground="{StaticResource WarningBrush}" Margin="0,16,0,0"/>
@@ -138,8 +138,8 @@
 <TextBlock Text="{Binding GpuVram, StringFormat=VRAM: {0}}" TextWrapping="Wrap" Margin="0,5,0,0"/>
 <TextBlock Text="{Binding PerformanceProtectionStatus}" TextWrapping="Wrap" Margin="0,5,0,0"/>
 <Expander Header="Custom safe tuning" Margin="0,18,0,0" Visibility="{Binding IsCustomMode, Converter={StaticResource BooleanToVisibilityConverter}}"><StackPanel>
-<ComboBox  ItemsSource="{Binding CustomModels}" SelectedItem="{Binding CustomModel}" Margin="0,6,0,0"/><ComboBox  ItemsSource="{Binding CustomBackends}" SelectedItem="{Binding CustomBackend}" Margin="0,6,0,0"/>
-<TextBlock Text="{Binding CustomThreads, StringFormat=CPU threads: {0}}" TextWrapping="Wrap" Margin="0,5,0,0"/><Slider Minimum="1" Maximum="8" Value="{Binding CustomThreads}"/><TextBlock Text="{Binding CustomChunkSeconds, StringFormat=Maximum utterance seconds: {0}}" TextWrapping="Wrap" Margin="0,5,0,0"/><Slider Minimum="4" Maximum="20" Value="{Binding CustomChunkSeconds}"/><TextBlock Text="{Binding CustomVad, StringFormat=VAD threshold: {0}}" TextWrapping="Wrap" Margin="0,5,0,0"/><Slider Minimum="0.001" Maximum="0.08" Value="{Binding CustomVad}"/><TextBlock Text="{Binding CustomQueue, StringFormat=Queue capacity: {0}}" TextWrapping="Wrap" Margin="0,5,0,0"/><Slider Minimum="1" Maximum="5" Value="{Binding CustomQueue}"/>
+<ComboBox AutomationProperties.Name="Custom speech model"  ItemsSource="{Binding CustomModels}" SelectedItem="{Binding CustomModel}" Margin="0,6,0,0"/><ComboBox AutomationProperties.Name="Custom speech backend"  ItemsSource="{Binding CustomBackends}" SelectedItem="{Binding CustomBackend}" Margin="0,6,0,0"/>
+<TextBlock Text="{Binding CustomThreads, StringFormat=CPU threads: {0}}" TextWrapping="Wrap" Margin="0,5,0,0"/><Slider AutomationProperties.Name="CPU threads" Minimum="1" Maximum="8" Value="{Binding CustomThreads}"/><TextBlock Text="{Binding CustomChunkSeconds, StringFormat=Maximum utterance seconds: {0}}" TextWrapping="Wrap" Margin="0,5,0,0"/><Slider AutomationProperties.Name="Maximum utterance seconds" Minimum="4" Maximum="20" Value="{Binding CustomChunkSeconds}"/><TextBlock Text="{Binding CustomVad, StringFormat=VAD threshold: {0}}" TextWrapping="Wrap" Margin="0,5,0,0"/><Slider AutomationProperties.Name="Voice detection threshold" Minimum="0.001" Maximum="0.08" Value="{Binding CustomVad}"/><TextBlock Text="{Binding CustomQueue, StringFormat=Queue capacity: {0}}" TextWrapping="Wrap" Margin="0,5,0,0"/><Slider AutomationProperties.Name="Queue capacity" Minimum="1" Maximum="5" Value="{Binding CustomQueue}"/>
 <CheckBox Content="Translate (otherwise transcribe only)" IsChecked="{Binding CustomTranslation}"/><Button Content="Apply custom settings" Click="OnApplyCustomClick" Style="{StaticResource SecondaryButton}" Margin="0,8,8,0"/>
 </StackPanel></Expander>
 <Expander Header="Developer tools" Margin="0,18,0,0"><StackPanel>
