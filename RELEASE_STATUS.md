@@ -1,11 +1,11 @@
-# Release status — VRChat Universal Translator 1.1.3
+# Release status — VRChat Universal Translator 1.1.4
 
-Updated: 2026-10-15 (after publishing 1.1.3)
+Updated: 2026-10-20 (after publishing 1.1.4)
 
 ## Where things stand
 
 - The repository is public, MIT-licensed (Copyright 2026 The Level Everything Company), with README, SECURITY, CONTRIBUTING, a code of conduct, issue forms, a pull-request template, a CI workflow and Dependabot.
-- Releases **1.1.0**, **1.1.1**, **1.1.2** and **1.1.3** are published as **pre-releases**. **1.1.3** (2026-10-15, tag `v1.1.3` on commit `d3fb6a0`) makes captions faster (an optional fast English engine, a faster Whisper setting for Balanced and Responsive CPU) and stops dropped speech being silent; see [RELEASE_NOTES.md](RELEASE_NOTES.md). Its package was downloaded anonymously from the release page and checked against the published checksum.
+- Releases **1.1.0**, **1.1.1**, **1.1.2**, **1.1.3** and **1.1.4** are published as **pre-releases**. **1.1.4** (2026-10-20, tag `v1.1.4` on commit `8f52539`) only updates the audio-capture library NAudio.Wasapi to 3.2.0; see [RELEASE_NOTES.md](RELEASE_NOTES.md). Its package was downloaded anonymously from the release page and checked against the published checksum. Before it, **1.1.3** (2026-10-15, tag `v1.1.3` on commit `d3fb6a0`) **1.1.3** (2026-10-15, tag `v1.1.3` on commit `d3fb6a0`) makes captions faster (an optional fast English engine, a faster Whisper setting for Balanced and Responsive CPU) and stops dropped speech being silent; see [RELEASE_NOTES.md](RELEASE_NOTES.md). Its package was downloaded anonymously from the release page and checked against the published checksum.
 - What was tested, and what was not, is in [VERIFICATION.md](VERIFICATION.md). The new fast English engine was measured on test recordings only and has not yet been run in a live VRChat lobby.
 - The portable ZIP contains the app, README, QUICK_START, PRIVACY, SECURITY, RELEASE_NOTES, THIRD_PARTY_NOTICES, VERIFICATION, LICENSE and the third-party `licenses\` folder. It contains no settings, models, logs or keys, and the DLLs and symbol files do not embed the local path of whoever built them.
 - `artifacts/` is git-ignored on purpose: the ZIP is attached to a GitHub Release, never committed. Its SHA-256 is published in `SHA256SUMS.txt` beside it, not recorded in this file.
@@ -28,6 +28,11 @@ The application remains truthfully CPU-only. GPU acceleration is a future engine
 5. Write `SHA256SUMS.txt` (`<hash>  <zip file name>`), commit, push, and wait for CI to be green.
 6. Create the release: tag `vX.Y.Z` on that commit, tick **Set as a pre-release** until acceptance is done, attach the ZIP and `SHA256SUMS.txt`.
 7. Download the ZIP from the release page as a stranger would and check that its hash matches.
+
+## What changed in 1.1.4 compared with 1.1.3
+
+- NAudio.Wasapi 3.1.0 to 3.2.0. Nothing else in the app. 72 automated checks, the real audio-capture test gave the same result as 1.1.1.
+- The repository now ignores secret-looking files and requires its build check to pass before changes reach `main`, so a release is prepared on a branch, merged by pull request, and the package is built from the merged `main`.
 
 ## What changed since 1.1.2
 
