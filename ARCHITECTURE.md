@@ -39,7 +39,7 @@ The implementation uses the stable `NAudio.Wasapi` 3.3.0 `WasapiRecorderBuilder.
 
 An executable two-source proof validates the boundary: selecting a silent target while an unrelated process rendered a tone produced a `0.000%` peak; targeting the tone-producing process produced `14.999%`. This test is kept in `tests/VRChatTranslator.AudioProofSource` and the core test runner.
 
-Fallback mode will use ordinary endpoint WASAPI loopback and will be labeled `SYSTEM AUDIO FALLBACK` everywhere, including diagnostics and logs. It will never be described as process-specific capture.
+A fallback mode is planned but not implemented: it would use ordinary endpoint WASAPI loopback and be labeled `SYSTEM AUDIO FALLBACK` everywhere, including diagnostics and logs, and never be described as process-specific capture. Today the app offers only VRChat-only capture; the mode and its label already exist in the code, but nothing selects it.
 
 Sources:
 
@@ -85,7 +85,7 @@ The phone server is embedded with ASP.NET Core/Kestrel in the desktop process; t
 
 Server-Sent Events (SSE) is the initial live transport because captions and diagnostics are read-only, server-to-client events. It has native browser reconnection semantics and lower protocol complexity than WebSocket for this one-way stream. Browser controls such as font size and view selection remain client-local. Caption text is assigned through DOM `textContent`, never injected as HTML.
 
-The server will expose loopback and useful physical LAN addresses, detect port conflicts, never configure port forwarding or UPnP, and never change Windows Firewall without a separate explicit user action. Optional pairing uses a short-lived PIN stored only in memory; QR codes contain the LAN URL, not the PIN.
+The server will expose loopback and useful physical LAN addresses, detect port conflicts, never configure port forwarding or UPnP, and never change Windows Firewall without a separate explicit user action. Every caption stream needs a six-digit PIN that is generated each time the display starts and kept only in memory; the link the app shows carries it. There is no QR code.
 
 ## Settings and data boundaries
 
