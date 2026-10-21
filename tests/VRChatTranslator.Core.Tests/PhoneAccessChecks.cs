@@ -52,6 +52,58 @@ internal static partial class Program
         return Task.CompletedTask;
     }
 
+    private static Task PhonePinGuessingCannotBeSpreadAcrossAddresses()
+    {
+        // An IPv6 device can use any address in its network, so it is counted by the network (the first 64 bits).
+        var a = System.Net.IPAddress.Parse("fe80::1111:2222:3333:4444");
+        var b = System.Net.IPAddress.Parse("fe80::aaaa:bbbb:cccc:dddd");
+        var other = System.Net.IPAddress.Parse("fd00:1:2:3::9");
+        AssertEqual(PhoneAccessPolicy.ClientKey(a), PhoneAccessPolicy.ClientKey(b), "Two addresses in one IPv6 network count as one client.");
+        AssertTrue(PhoneAccessPolicy.ClientKey(a) != PhoneAccessPolicy.ClientKey(other), "Different IPv6 networks count as different clients.");
+        AssertEqual("192.168.1.50", PhoneAccessPolicy.ClientKey(System.Net.IPAddress.Parse("::ffff:192.168.1.50")), "An IPv4 client reached over IPv6 is counted by its IPv4 address.");
+        AssertTrue(PhoneAccessPolicy.ClientKey(System.Net.IPAddress.Parse("192.168.1.50")) != PhoneAccessPolicy.ClientKey(System.Net.IPAddress.Parse("192.168.1.51")), "Two IPv4 phones stay separate.");
+        AssertEqual("unknown", PhoneAccessPolicy.ClientKey(null), "A missing address is still counted.");
+
+        // All clients together get a limit too, so trying one PIN from many different addresses is slowed as well.
+        var start = new DateTimeOffset(2026, 10, 20, 12, 0, 0, TimeSpan.Zero);
+        var shared = new PinAttemptLimiter(maxFailures: 5, window: TimeSpan.FromMinutes(5), maxTotalFailures: 30);
+        for (var i = 0; i < 29; i++)
+        {
+            shared.RecordFailure($"10.0.0.{i + 1}", start.AddSeconds(i));
+        }
+
+        AssertEqual(TimeSpan.Zero, shared.RetryAfter("10.0.0.200", start.AddSeconds(30)), "Twenty-nine wrong PINs across many phones do not yet pause everyone.");
+        shared.RecordFailure("10.0.0.30", start.AddSeconds(29));
+        var pause = shared.RetryAfter("10.0.0.200", start.AddSeconds(31));
+        AssertTrue(pause > TimeSpan.FromMinutes(4) && pause <= TimeSpan.FromMinutes(5), "Thirty wrong PINs from different addresses pause every address for about five minutes.");
+        AssertEqual(TimeSpan.Zero, shared.RetryAfter("10.0.0.200", start.AddMinutes(6)), "The overall pause ends once the failures age out.");
+
+        // A flood of fresh addresses must not wipe out another client's block.
+        var flooded = new PinAttemptLimiter(maxFailures: 5, window: TimeSpan.FromMinutes(5), maxTotalFailures: 1_000_000);
+        for (var i = 0; i < 5; i++)
+        {
+            flooded.RecordFailure("victim", start.AddSeconds(i));
+        }
+
+        for (var i = 0; i < 3000; i++)
+        {
+            flooded.RecordFailure($"flood-{i}", start.AddSeconds(10));
+        }
+
+        AssertTrue(flooded.RetryAfter("victim", start.AddSeconds(20)) > TimeSpan.Zero, "A block survives a flood of other addresses.");
+        AssertTrue(flooded.RetryAfter("flood-0", start.AddSeconds(20)) == TimeSpan.Zero, "A client with one wrong PIN may still try.");
+        AssertEqual(TimeSpan.Zero, flooded.RetryAfter("victim", start.AddMinutes(6)), "The block still ends once its failures age out.");
+
+        // A correct PIN clears that client's failures but not the overall count.
+        var mixed = new PinAttemptLimiter(maxFailures: 5, window: TimeSpan.FromMinutes(5), maxTotalFailures: 3);
+        mixed.RecordFailure("phone", start);
+        mixed.RecordFailure("attacker-a", start);
+        mixed.RecordSuccess("phone");
+        mixed.RecordFailure("attacker-b", start);
+        AssertTrue(mixed.RetryAfter("phone", start.AddSeconds(1)) > TimeSpan.Zero, "A correct PIN does not erase the overall count.");
+        return Task.CompletedTask;
+    }
+
     private static Task PhonePinAttemptsAreLimitedPerClient()
     {
         var limiter = new PinAttemptLimiter(maxFailures: 5, window: TimeSpan.FromMinutes(5));

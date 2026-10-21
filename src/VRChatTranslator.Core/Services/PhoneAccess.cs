@@ -91,6 +91,27 @@ public static class PhoneAccessPolicy
         return header.Count(c => c == ':') == 1 ? header[..header.IndexOf(':')] : header;
     }
 
+    /// <summary>
+    /// The name the PIN limiter counts a client under. An IPv6 client is counted by its /64 network, because a device can pick
+    /// any other address in that network at will; without this, trying each PIN from a fresh address would never be limited.
+    /// </summary>
+    public static string ClientKey(IPAddress? address)
+    {
+        if (address is null)
+        {
+            return "unknown";
+        }
+
+        if (address.IsIPv4MappedToIPv6)
+        {
+            address = address.MapToIPv4();
+        }
+
+        return address.AddressFamily == AddressFamily.InterNetworkV6
+            ? "v6:" + Convert.ToHexString(address.GetAddressBytes(), 0, 8)
+            : address.ToString();
+    }
+
     public static string NewPin() => RandomNumberGenerator.GetInt32(0, (int)Math.Pow(10, PinLength)).ToString("D" + PinLength);
 
     /// <summary>Compares in constant time so the answer does not leak how many digits were right.</summary>
@@ -102,11 +123,18 @@ public static class PhoneAccessPolicy
     }
 }
 
-/// <summary>Counts wrong PINs per client so a six-digit PIN cannot simply be tried one after another.</summary>
-public sealed class PinAttemptLimiter(int maxFailures = 5, TimeSpan? window = null)
+/// <summary>
+/// Counts wrong PINs so a six-digit PIN cannot simply be tried one after another. Each client gets <c>maxFailures</c> wrong
+/// tries per window, and all clients together get <c>maxTotalFailures</c>, so guessing from many addresses at once is slowed
+/// as well. While the overall limit is reached everyone waits, even with the right PIN; that is deliberate.
+/// </summary>
+public sealed class PinAttemptLimiter(int maxFailures = 5, TimeSpan? window = null, int maxTotalFailures = 30)
 {
+    private const int MaximumTrackedClients = 1000;
+    private const string OverflowClient = "~overflow";
     private readonly TimeSpan _window = window ?? TimeSpan.FromMinutes(5);
     private readonly Dictionary<string, Queue<DateTimeOffset>> _failures = [];
+    private readonly Queue<DateTimeOffset> _allFailures = new();
     private readonly object _gate = new();
 
     /// <summary>How long the client must wait, or zero when it may try.</summary>
@@ -114,19 +142,27 @@ public sealed class PinAttemptLimiter(int maxFailures = 5, TimeSpan? window = nu
     {
         lock (_gate)
         {
-            if (!_failures.TryGetValue(client, out var queue))
+            Prune(_allFailures, now);
+            var wait = _allFailures.Count >= maxTotalFailures ? _allFailures.Peek() + _window - now : TimeSpan.Zero;
+
+            if (_failures.TryGetValue(KeyFor(client), out var queue))
             {
-                return TimeSpan.Zero;
+                Prune(queue, now);
+                if (queue.Count == 0)
+                {
+                    _failures.Remove(KeyFor(client));
+                }
+                else if (queue.Count >= maxFailures)
+                {
+                    var clientWait = queue.Peek() + _window - now;
+                    if (clientWait > wait)
+                    {
+                        wait = clientWait;
+                    }
+                }
             }
 
-            Prune(queue, now);
-            if (queue.Count == 0)
-            {
-                _failures.Remove(client);
-                return TimeSpan.Zero;
-            }
-
-            return queue.Count >= maxFailures ? queue.Peek() + _window - now : TimeSpan.Zero;
+            return wait;
         }
     }
 
@@ -134,18 +170,26 @@ public sealed class PinAttemptLimiter(int maxFailures = 5, TimeSpan? window = nu
     {
         lock (_gate)
         {
-            if (!_failures.TryGetValue(client, out var queue))
+            if (_failures.Count >= MaximumTrackedClients && !_failures.ContainsKey(client))
             {
-                if (_failures.Count >= 1000)
+                // Make room by dropping clients whose failures have all aged out. Never clear everyone: that would let a flood of
+                // fresh addresses wipe out another client's block.
+                foreach (var stale in _failures.Where(pair => IsStale(pair.Value, now)).Select(pair => pair.Key).ToArray())
                 {
-                    _failures.Clear(); // a flood of addresses must not grow this without bound
+                    _failures.Remove(stale);
                 }
+            }
 
-                _failures[client] = queue = new Queue<DateTimeOffset>();
+            var key = KeyFor(client);
+            if (!_failures.TryGetValue(key, out var queue))
+            {
+                _failures[key] = queue = new Queue<DateTimeOffset>();
             }
 
             Prune(queue, now);
             queue.Enqueue(now);
+            Prune(_allFailures, now);
+            _allFailures.Enqueue(now);
         }
     }
 
@@ -153,9 +197,15 @@ public sealed class PinAttemptLimiter(int maxFailures = 5, TimeSpan? window = nu
     {
         lock (_gate)
         {
-            _failures.Remove(client);
+            _failures.Remove(KeyFor(client));
         }
     }
+
+    // Clients beyond the tracking limit share one bucket, so memory stays bounded without letting anyone reset anyone.
+    private string KeyFor(string client) =>
+        _failures.ContainsKey(client) || _failures.Count < MaximumTrackedClients ? client : OverflowClient;
+
+    private bool IsStale(Queue<DateTimeOffset> queue, DateTimeOffset now) => queue.Count == 0 || now - queue.Last() >= _window;
 
     private void Prune(Queue<DateTimeOffset> queue, DateTimeOffset now)
     {
