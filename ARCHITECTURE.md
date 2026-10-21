@@ -35,7 +35,7 @@ Normal mode is `VRCHAT ONLY`. It will use the Windows Application Loopback API a
 
 This captures render streams belonging to VRChat and its child processes independent of the physical output endpoint. Other application audio is excluded. If VRChat has no active render stream, Windows supplies silence.
 
-The implementation uses the stable `NAudio.Wasapi` 3.2.0 `WasapiRecorderBuilder.WithProcessLoopback` API, which wraps this exact activation contract, and is isolated behind `IProcessAudioCaptureService`. The app requests 48 kHz stereo 32-bit IEEE-float PCM with a 50 ms event-driven buffer and MMCSS `Audio` scheduling. The zero-copy WASAPI callback computes a meter immediately, copies owned PCM into a bounded 64-chunk channel, and never retains COM-owned memory.
+The implementation uses the stable `NAudio.Wasapi` 3.3.0 `WasapiRecorderBuilder.WithProcessLoopback` API, which wraps this exact activation contract, and is isolated behind `IProcessAudioCaptureService`. The app requests 48 kHz stereo 32-bit IEEE-float PCM with a 50 ms event-driven buffer and MMCSS `Audio` scheduling. The zero-copy WASAPI callback computes a meter immediately, copies owned PCM into a bounded 64-chunk channel, and never retains COM-owned memory.
 
 An executable two-source proof validates the boundary: selecting a silent target while an unrelated process rendered a tone produced a `0.000%` peak; targeting the tone-producing process produced `14.999%`. This test is kept in `tests/VRChatTranslator.AudioProofSource` and the core test runner.
 
