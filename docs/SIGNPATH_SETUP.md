@@ -2,14 +2,15 @@
 
 This repository is **prepared** for free code signing through [SignPath Foundation](https://signpath.org). Nothing is signed
 yet and nothing here needs SignPath to keep working: until the steps below are done, the Release workflow builds and
-checks an **unsigned** package and prepares a draft release, exactly as before. Rules and settings below come from SignPath's
+checks an **unsigned** package and prepares a draft release. Rules and settings below come from SignPath's
 own documentation as of October 2026; read their current pages before applying, because they may change.
 
 ## What is already in the repository
 
 | File | What it does |
 | --- | --- |
-| `.github/workflows/release.yml` | On a `v*` tag: builds the package on GitHub, runs the checks, signs it if enabled, creates a **draft** pre-release. On a pull request that touches the release files, or when run by hand: build and check only. |
+| `.github/workflows/release.yml` | On a `v*` tag: builds the package on GitHub, runs the checks, creates a **draft** pre-release. On a pull request that touches the release files, or when run by hand: build and check only. It does **not** contain the signing step yet (see step 3 for why). |
+| `.signpath/release-signing-job.yml` | The signing job, ready to paste into `release.yml` once SignPath has accepted the project and the repository allows SignPath's action. It is not a workflow by itself. |
 | `scripts/build-release.ps1` | The same package build as before. It now leaves the commit id out of the file version, so the version in each file's properties is exactly `x.y.z` for every build of a release (SignPath requires that). |
 | `scripts/check-package.ps1` | Fails if the package is missing a required file, holds something that looks like a setting, model, log or key, or contains the build machine's folder name, the maintainer's user name or an e-mail address. Writes `SHA256SUMS.txt`. |
 | `scripts/verify-signed-package.ps1` | After signing: each of our five files must have a valid, timestamped signature; every other file must be byte-identical to the unsigned build. |
@@ -50,6 +51,16 @@ In SignPath:
       the branch ruleset already on `main` (deletion and force-push blocked, build check required) is what it looks for.
 - [ ] Create an **API token** for a SignPath user who may submit requests for that project and policy.
 
+**Allow SignPath's action in GitHub, then add the signing job.** This repository only allows GitHub's own actions (Settings, Actions, General), and
+SignPath's action is not one of them. A workflow that mentions a disallowed action does not start at all (the run shows
+"startup failure"), which is why the signing job is not in `release.yml` yet.
+
+- [ ] In GitHub: Settings, Actions, General, Actions permissions. Keep "Allow ... select actions" and add
+      `signpath/github-action-submit-signing-request@*` to the allowed list. This keeps the setting at "selected" (the weekly security scan only complains
+      about "all"), and it lets exactly one outside action run. Only do this after SignPath has accepted the project.
+- [ ] Paste the job from `.signpath/release-signing-job.yml` into `.github/workflows/release.yml` and make the three small edits its comments list
+      (through a pull request, like any change).
+
 In GitHub (repository Settings, Secrets and variables, Actions):
 
 - [ ] Secret `SIGNPATH_API_TOKEN`: the token.
@@ -83,6 +94,8 @@ In GitHub (repository Settings, Secrets and variables, Actions):
 
 ## What can go wrong
 
+- A Release run that ends as "startup failure" without running any step: the workflow file mentions an action this repository does not allow.
+  Remove that action or allow it in Settings, Actions, General.
 - The workflow stops with "The tag does not match the app version": the tag must be `v` plus the version in the project file.
 - The workflow stops with "The first heading in RELEASE_NOTES.md...": the newest notes section must start with the version.
 - SignPath refuses a file: its product name or version differs from `.signpath/artifact-configuration.xml`. The three library

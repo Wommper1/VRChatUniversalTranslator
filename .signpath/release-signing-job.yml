@@ -1,0 +1,79 @@
+# NOT A WORKFLOW. This job is kept here, ready to paste into .github/workflows/release.yml once SignPath has accepted the
+# project AND the repository allows SignPath's action (docs/SIGNPATH_SETUP.md, step 3). Pasting it earlier makes the whole Release
+# workflow fail to start, because this repository only allows GitHub's own actions.
+#
+# When you paste it:
+#   1. Add this job under `jobs:` in release.yml, next to `build` and `draft-release`.
+#   2. In the `draft-release` job change
+#        needs: build
+#        if: github.ref_type == 'tag'
+#      to
+#        needs: [build, sign]
+#        if: ${{ always() && github.ref_type == 'tag' && needs.build.result == 'success' && (needs.sign.result == 'success' || needs.sign.result == 'skipped') }}
+#      and change the artifact name in its "Fetch the package" step to
+#        name: ${{ needs.sign.result == 'success' && 'release-signed' || 'release-unsigned' }}
+#      and add the signed flag to the "Write the release text" step:
+#        $signed = '${{ needs.sign.result }}' -eq 'success'
+#        ./scripts/write-release-body.ps1 ... -Signed:$signed
+#   3. Set the repository variable SIGNPATH_ENABLED to "true" (and the other variables and the secret).
+
+  sign:
+    name: Sign with SignPath
+    needs: build
+    # Off until SIGNPATH_ENABLED is "true". Never runs for pull requests or manual runs.
+    if: github.ref_type == 'tag' && vars.SIGNPATH_ENABLED == 'true'
+    runs-on: windows-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Submit the signing request and wait for the approval
+        uses: signpath/github-action-submit-signing-request@f6d04783b4569d051e0c80105fe66e82819d0092 # v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
+          github-artifact-id: ${{ needs.build.outputs.unsigned-files-id }}
+          wait-for-completion: true
+          output-artifact-directory: signed-download
+          parameters: |
+            version: "${{ needs.build.outputs.version }}"
+
+      - name: Fetch the unsigned package to compare against
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: release-unsigned
+          path: unsigned-download
+
+      - name: Check the signatures and assemble the signed package
+        shell: pwsh
+        run: |
+          $version = '${{ needs.build.outputs.version }}'
+          $zipName = "VRChatUniversalTranslator-$version-win-x64-portable.zip"
+
+          Expand-Archive -LiteralPath "unsigned-download/$zipName" -DestinationPath unsigned-files -Force
+
+          # SignPath returns either the signed archive or its content; handle both.
+          $archives = @(Get-ChildItem -LiteralPath signed-download -Filter *.zip -File -Recurse)
+          if ($archives.Count -eq 1) { Expand-Archive -LiteralPath $archives[0].FullName -DestinationPath signed-files -Force }
+          elseif ($archives.Count -eq 0) { Copy-Item -Path signed-download -Destination signed-files -Recurse -Force }
+          else { throw "Expected one signed archive from SignPath, found $($archives.Count)." }
+
+          ./scripts/verify-signed-package.ps1 -UnsignedFolder unsigned-files -SignedFolder signed-files
+
+          New-Item -ItemType Directory -Force -Path release-signed | Out-Null
+          Compress-Archive -Path 'signed-files/*' -DestinationPath "release-signed/$zipName" -CompressionLevel Optimal -Force
+          $hash = (Get-FileHash -LiteralPath "release-signed/$zipName" -Algorithm SHA256).Hash.ToLowerInvariant()
+          [System.IO.File]::WriteAllText('release-signed/SHA256SUMS.txt', "$hash  $zipName`n")
+          Write-Host "Signed package SHA-256 $hash"
+
+      - name: Upload the signed package
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: release-signed
+          path: release-signed/*
+          retention-days: 14
+          if-no-files-found: error
