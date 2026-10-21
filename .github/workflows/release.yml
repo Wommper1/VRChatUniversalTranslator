@@ -1,13 +1,15 @@
 name: Release
 
-# Builds the portable package from a version tag, optionally has it code-signed through SignPath, and attaches the result to a
-# DRAFT pre-release that the owner reads and publishes by hand. Nothing in this file publishes a release by itself.
+# Builds the portable package from a version tag and attaches it to a DRAFT pre-release that the owner reads and publishes by
+# hand. Nothing in this file publishes a release by itself.
 #
-#   push of a tag v*   full run: build, check, sign (only if enabled), create the draft release
+#   push of a tag v*   full run: build, check, create the draft release
 #   pull request       only when this file, the build scripts or the signing setup change: build and check, nothing else
 #   manual run         build and check, nothing else
 #
-# Signing stays off until the repository variable SIGNPATH_ENABLED is set to "true". See docs/SIGNPATH_SETUP.md.
+# Code signing is NOT in this file. This repository only allows GitHub's own actions, and SignPath's action is not one of them,
+# so putting it here stops the whole workflow from starting. The signing job is kept ready in .signpath/release-signing-job.yml;
+# docs/SIGNPATH_SETUP.md says when and how to add it.
 # Releases are still made on a branch and merged by pull request first; the tag goes on the merged commit.
 
 on:
@@ -106,71 +108,10 @@ jobs:
           retention-days: 14
           if-no-files-found: error
 
-  sign:
-    name: Sign with SignPath
-    needs: build
-    # Off until SIGNPATH_ENABLED is "true". Never runs for pull requests or manual runs.
-    if: github.ref_type == 'tag' && vars.SIGNPATH_ENABLED == 'true'
-    runs-on: windows-latest
-    permissions:
-      contents: read
-      actions: read
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-      - name: Submit the signing request and wait for the approval
-        uses: signpath/github-action-submit-signing-request@f6d04783b4569d051e0c80105fe66e82819d0092 # v3
-        with:
-          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
-          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
-          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
-          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
-          github-artifact-id: ${{ needs.build.outputs.unsigned-files-id }}
-          wait-for-completion: true
-          output-artifact-directory: signed-download
-          parameters: |
-            version: "${{ needs.build.outputs.version }}"
-
-      - name: Fetch the unsigned package to compare against
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
-        with:
-          name: release-unsigned
-          path: unsigned-download
-
-      - name: Check the signatures and assemble the signed package
-        shell: pwsh
-        run: |
-          $version = '${{ needs.build.outputs.version }}'
-          $zipName = "VRChatUniversalTranslator-$version-win-x64-portable.zip"
-
-          Expand-Archive -LiteralPath "unsigned-download/$zipName" -DestinationPath unsigned-files -Force
-
-          # SignPath returns either the signed archive or its content; handle both.
-          $archives = @(Get-ChildItem -LiteralPath signed-download -Filter *.zip -File -Recurse)
-          if ($archives.Count -eq 1) { Expand-Archive -LiteralPath $archives[0].FullName -DestinationPath signed-files -Force }
-          elseif ($archives.Count -eq 0) { Copy-Item -Path signed-download -Destination signed-files -Recurse -Force }
-          else { throw "Expected one signed archive from SignPath, found $($archives.Count)." }
-
-          ./scripts/verify-signed-package.ps1 -UnsignedFolder unsigned-files -SignedFolder signed-files
-
-          New-Item -ItemType Directory -Force -Path release-signed | Out-Null
-          Compress-Archive -Path 'signed-files/*' -DestinationPath "release-signed/$zipName" -CompressionLevel Optimal -Force
-          $hash = (Get-FileHash -LiteralPath "release-signed/$zipName" -Algorithm SHA256).Hash.ToLowerInvariant()
-          [System.IO.File]::WriteAllText('release-signed/SHA256SUMS.txt', "$hash  $zipName`n")
-          Write-Host "Signed package SHA-256 $hash"
-
-      - name: Upload the signed package
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
-        with:
-          name: release-signed
-          path: release-signed/*
-          retention-days: 14
-          if-no-files-found: error
-
   draft-release:
     name: Create the draft pre-release
-    needs: [build, sign]
-    if: ${{ always() && github.ref_type == 'tag' && needs.build.result == 'success' && (needs.sign.result == 'success' || needs.sign.result == 'skipped') }}
+    needs: build
+    if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -180,7 +121,7 @@ jobs:
       - name: Fetch the package
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
-          name: ${{ needs.sign.result == 'success' && 'release-signed' || 'release-unsigned' }}
+          name: release-unsigned
           path: release
 
       - name: Write the release text
@@ -191,8 +132,7 @@ jobs:
           $sums = (Get-Content -LiteralPath release/SHA256SUMS.txt -Raw).Trim()
           $hash = ($sums -split '\s+')[0]
           if ($hash -ne (Get-FileHash -LiteralPath "release/$zipName" -Algorithm SHA256).Hash.ToLowerInvariant()) { throw 'SHA256SUMS.txt does not match the ZIP.' }
-          $signed = '${{ needs.sign.result }}' -eq 'success'
-          ./scripts/write-release-body.ps1 -Version $version -ZipName $zipName -Sha256 $hash -OutputPath release-body.md -Signed:$signed
+          ./scripts/write-release-body.ps1 -Version $version -ZipName $zipName -Sha256 $hash -OutputPath release-body.md
 
       - name: Create the draft
         env:
