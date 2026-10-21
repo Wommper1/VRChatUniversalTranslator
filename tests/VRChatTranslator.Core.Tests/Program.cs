@@ -136,6 +136,7 @@ internal static partial class Program
             ("voice detection falls back to the energy gate when the model is missing or damaged", VoiceDetectionFallsBackToTheEnergyGateWhenTheModelIsMissingOrDamaged),
             ("the Silero detector kept for experiments loads and rejects silence, noise, tones and clicks", TheSileroDetectorKeptForExperimentsLoadsAndRejectsSilenceAndNoise),
             ("the filter drops stock video phrases and loops but not real sentences", TheFilterDropsStockVideoPhrasesAndLoopsButNotRealSentences),
+            ("the filter drops bracketed sound notes and keeps short real speech", TheFilterDropsBracketedSoundNotesAndKeepsShortRealSpeech),
             ("the queue policy skips old speech only when newer speech waits", TheQueuePolicySkipsOldSpeechOnlyWhenNewerSpeechWaits),
             ("a full queue drops the oldest speech, keeps the newest and says so", AFullQueueDropsTheOldestSpeechAndSaysSo),
             ("old speech is skipped only when newer speech is waiting, never silently", OldSpeechIsSkippedOnlyWhenNewerSpeechIsWaiting),
