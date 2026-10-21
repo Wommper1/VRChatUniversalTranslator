@@ -1,11 +1,11 @@
-# Release status — VRChat Universal Translator 1.1.4
+# Release status — VRChat Universal Translator 1.1.5
 
-Updated: 2026-10-20 (after publishing 1.1.4)
+Updated: 2026-10-21 (after publishing 1.1.5)
 
 ## Where things stand
 
 - The repository is public, MIT-licensed (Copyright 2026 The Level Everything Company), with README, SECURITY, CONTRIBUTING, a code of conduct, issue forms, a pull-request template, a CI workflow and Dependabot.
-- Releases **1.1.0**, **1.1.1**, **1.1.2**, **1.1.3** and **1.1.4** are published as **pre-releases**. **1.1.4** (2026-10-20, tag `v1.1.4` on commit `8f52539`) only updates the audio-capture library NAudio.Wasapi to 3.2.0; see [RELEASE_NOTES.md](RELEASE_NOTES.md). Its package was downloaded anonymously from the release page and checked against the published checksum. Before it, **1.1.3** (2026-10-15, tag `v1.1.3` on commit `d3fb6a0`) **1.1.3** (2026-10-15, tag `v1.1.3` on commit `d3fb6a0`) makes captions faster (an optional fast English engine, a faster Whisper setting for Balanced and Responsive CPU) and stops dropped speech being silent; see [RELEASE_NOTES.md](RELEASE_NOTES.md). Its package was downloaded anonymously from the release page and checked against the published checksum.
+- Releases **1.1.0**, **1.1.1**, **1.1.2**, **1.1.3**, **1.1.4** and **1.1.5** are published as **pre-releases**. **1.1.5** (2026-10-20, tag `v1.1.5` on commit `6308da8`) adds the bracketed-sound-note caption filter, screen-reader names, a stricter wrong-PIN limit for the phone display and NAudio.Wasapi 3.3.0 (see [RELEASE_NOTES.md](RELEASE_NOTES.md)). It is the first release built by the Release workflow on GitHub and published from its draft; its package was downloaded from the release page without logging in and checked against the published checksum. Before it, **1.1.4** (2026-10-20, tag `v1.1.4` on commit `8f52539`) only updates the audio-capture library NAudio.Wasapi to 3.2.0; see [RELEASE_NOTES.md](RELEASE_NOTES.md). Its package was downloaded anonymously from the release page and checked against the published checksum. Before it, **1.1.3** (2026-10-15, tag `v1.1.3` on commit `d3fb6a0`) **1.1.3** (2026-10-15, tag `v1.1.3` on commit `d3fb6a0`) makes captions faster (an optional fast English engine, a faster Whisper setting for Balanced and Responsive CPU) and stops dropped speech being silent; see [RELEASE_NOTES.md](RELEASE_NOTES.md). Its package was downloaded anonymously from the release page and checked against the published checksum.
 - What was tested, and what was not, is in [VERIFICATION.md](VERIFICATION.md). The new fast English engine was measured on test recordings only and has not yet been run in a live VRChat lobby.
 - The portable ZIP contains the app, README, QUICK_START, PRIVACY, SECURITY, RELEASE_NOTES, THIRD_PARTY_NOTICES, VERIFICATION, LICENSE and the third-party `licenses\` folder. It contains no settings, models, logs or keys, and the DLLs and symbol files do not embed the local path of whoever built them.
 - `artifacts/` is git-ignored on purpose: the ZIP is attached to a GitHub Release, never committed. Its SHA-256 is published in `SHA256SUMS.txt` beside it, not recorded in this file.
@@ -32,6 +32,11 @@ The application remains truthfully CPU-only. GPU acceleration is a future engine
 ## Making a release with the Release workflow (alternative to the steps above)
 
 Steps 1 to 5 are the same (version, notes, checks, merged by pull request). Then tag the merged commit and push the tag (`git tag vX.Y.Z`, `git push origin vX.Y.Z`). The [Release workflow](.github/workflows/release.yml) builds the package on GitHub, runs the checks, checks the package for personal data, and creates a **draft pre-release** with the ZIP and `SHA256SUMS.txt`. You still read the draft, download it and check it as in step 7, then publish it by hand. A package built this way is not byte-identical to one built on your PC (file times differ), so the hash that counts is the one in the draft.
+
+## What changed in 1.1.5 compared with 1.1.4
+
+- Caption filter drops short bracketed sound notes; every control in the app window has a screen-reader name (guarded by the startup test); input borders are clearer; the phone display's wrong-PIN limiter counts an IPv6 network as one device and pauses everyone after 30 wrong PINs in five minutes; NAudio.Wasapi 3.3.0. 74 automated checks (72 in 1.1.4).
+- The package is built by the Release workflow on GitHub, so it bundles the .NET runtime that was on GitHub's build machine (10.0.1326, where 1.1.4 had 10.0.1226). A package built on the maintainer's PC is therefore not byte-identical to the published one.
 
 ## What changed in 1.1.4 compared with 1.1.3
 
