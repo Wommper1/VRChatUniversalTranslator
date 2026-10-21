@@ -1,6 +1,25 @@
-# Verification — versions 1.1.0 to 1.1.4
+# Verification — versions 1.1.0 to 1.1.5
 
 This records what was actually run and what was not. It is not a claim of bug-free or fully hardware-accepted software; see "Not verified" below.
+
+## Release 1.1.5, 2026-10-20
+
+1.1.5 adds the bracketed-sound-note caption filter, screen-reader names and clearer input borders, a stricter wrong-PIN limit for the phone display, and the NAudio.Wasapi 3.3.0 update (see [RELEASE_NOTES.md](RELEASE_NOTES.md)). The four changes were first tested together on one scratch branch, then again on the release commit's tree. What was run on the build PC (Windows 11, .NET SDK 10.0.401):
+
+| Check | Result |
+| --- | --- |
+| Debug build and Release package build, warnings as errors | 0 warnings, 0 errors |
+| Automated checks | 74/74 (72 in 1.1.4, plus one for bracketed sound notes and short real speech, one for the PIN limiter). Without the new caption rule its check fails (72/73 at the time); the limiter check was also run against a copy of the old limiter, which let a flood of fresh addresses wipe a block and allowed 2000 wrong tries from 400 IPv6 addresses |
+| WPF `--smoke-test` and `--phone-self-test` | pass, both from source and from the extracted ZIP; the smoke test now also asks Windows UI Automation for the name of every operable control and fails without one (with the names removed it failed and listed all 31) |
+| Real WASAPI process capture (`--capture-proof`, two short test tones) | selected process 14.999%, unrelated process 0.000% (identical to 1.1.1 and 1.1.4) with NAudio.Wasapi 3.3.0 |
+| Known-vulnerable packages | none in any project |
+| Package contents | 659 files, the same file list as the published 1.1.4 package: none added, none removed, 16 differ: the app's own assemblies, symbol files and manifest and the NAudio libraries (12), and four documents (README, SECURITY, RELEASE_NOTES, VERIFICATION). The extracted program reports version 1.1.5 and NAudio.Wasapi 3.3.0. The file properties now show exactly the version number (no commit id) |
+| Package check (`scripts/check-package.ps1`) | the required files are present; nothing that looks like a setting, model, log or key; no user name, build-machine folder or e-mail address in any file (searched as text and as UTF-16) |
+| Contrast of every text colour on its background (calculated) | 4.5:1 or better for all; input borders raised from 2.2:1 to about 4.7:1 |
+
+The published ZIP is built by the Release workflow on GitHub from the tagged commit, not on the build PC, so its hash differs from the local build above (file times differ). The workflow runs the build, the automated checks, the vulnerable-package check and the package check; the draft ZIP is then downloaded and its startup tests are run from an extracted copy before it is published.
+
+Not run for this release: a live VRChat session (so the caption filter change is untested on real lobby audio), a real screen reader (Narrator or NVDA) and keyboard tab order, other Windows display scales, the wrong-PIN limiter from a second device or over IPv6 on a real network, the SteamVR headset, typed replies to the VRChat chatbox, a physical phone, language packs, speaker labels, and code signing (not used). Everything that was not verified for 1.1.3 still is not.
 
 ## Release 1.1.4, 2026-10-20
 
@@ -239,6 +258,9 @@ The items below are covered step by step in [ACCEPTANCE_CHECKLIST.md](ACCEPTANCE
 - **Tray menu behavior while VRChat has focus** — the four global shortcuts were exercised on 2026-10-12; the tray menu, the shortcut-conflict message and close-to-tray were only reported as working.
 - **Explicit OSC reply sending** to a live VRChat session.
 - Phone display on a physical phone through the router/firewall.
+- **Screen reader use** of the app window (Narrator, NVDA), keyboard tab order, other Windows display scales.
+- **Bracketed sound notes** in real lobby audio: the filter was tested with typed examples only.
+- **Wrong-PIN limiter** from a second device or over IPv6 on a real network.
 
 ## Reproducing
 
