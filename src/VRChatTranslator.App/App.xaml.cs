@@ -125,6 +125,7 @@ public partial class App : Application
                 throw new InvalidOperationException("The performance selector did not render with the dark readable theme.");
             }
             window.RunDesktopChecks();
+            window.RunAccessibilityChecks();
 
             window.Close();
             Shutdown(0);

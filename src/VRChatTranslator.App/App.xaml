@@ -78,7 +78,7 @@
       <Setter Property="Background" Value="{StaticResource PanelLightBrush}" />
       <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
       <Setter Property="CaretBrush" Value="{StaticResource AccentBrush}" />
-      <Setter Property="BorderBrush" Value="#5566D6C5" />
+      <Setter Property="BorderBrush" Value="#4F9A91" />
       <Setter Property="Padding" Value="10,8" />
       <Setter Property="FontSize" Value="14" />
     </Style>
@@ -109,7 +109,7 @@
       <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI" />
       <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
       <Setter Property="Background" Value="{StaticResource PanelLightBrush}" />
-      <Setter Property="BorderBrush" Value="#5566D6C5" />
+      <Setter Property="BorderBrush" Value="#4F9A91" />
       <Setter Property="BorderThickness" Value="1" />
       <Setter Property="Padding" Value="10,7" />
       <Setter Property="MaxDropDownHeight" Value="320" />

@@ -52,11 +52,10 @@ or phone-add-on features are included; preserve existing functionality.
 - [ ] Keep dropdowns, selected items, buttons, and focus states readable in the
   dark theme, including at different Windows display scales.
   *Status: dark dropdown/button styles and a keyboard-focus outline on buttons are
-  implemented (`App.xaml`); no one has checked other Windows display scales.*
+  implemented (`App.xaml`). Contrast was calculated on 2026-10-20: every text colour on its background is at least 4.5:1, and input borders were raised from 2.2:1 to about 4.7:1 (the guideline for borders is 3:1). No one has looked at the window at other Windows display scales.*
 - [ ] Verify navigation, keyboard access, resizing, and small-screen layouts in
   the running app.
-  *Status: not done. Needs a human pass on the running app (the window has a
-  820×600 minimum size).*
+  *Status: partly done. Every control now has a screen-reader name, and the startup test (`--smoke-test`, `AccessibilityChecks.cs`) fails if a new one is added without a name. Tab order, keyboard use, resizing and a real screen reader still need a human pass on the running app (the window has a 820×600 minimum size).*
 
 ## 2. Comfortable captions
 
@@ -83,8 +82,7 @@ or phone-add-on features are included; preserve existing functionality.
   wider than the screen). The call against a real monitor change has not been
   exercised.*
 - [ ] Verify long captions, multilingual fonts, contrast, and line wrapping.
-  *Status: long-caption growth is smoke-tested. Multilingual fonts, contrast and
-  wrapping have not been inspected in the running app.*
+  *Status: long-caption growth is smoke-tested and text contrast was calculated (see section 1). Multilingual fonts and wrapping have not been inspected in the running app.*
 
 ## 3. More responsive caption processing
 
