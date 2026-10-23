@@ -2,6 +2,8 @@
 
 Live captions and English translation for VRChat, running entirely on your own Windows PC.
 
+**[Download version 1.1.5 for Windows 11](https://github.com/Wommper1/VRChatUniversalTranslator/releases/tag/v1.1.5)** (free, early release). Then follow [Download and install](#download-and-install) below.
+
 It listens to the audio that `VRChat.exe` plays (never your microphone), turns speech into text with a local Whisper model, translates it to English, and shows the captions in a click-through desktop overlay, on a SteamVR dashboard overlay, and, if you switch it on, on a phone on your home network.
 
 > **Status: version 1.1.5, early release.** The build, 74 automated checks, the startup smoke test and the phone-server self-test pass, and the app has had a first real-world run with VRChat. Live VRChat sessions, a physical SteamVR headset, and a physical phone have **not** yet been through a full acceptance run, so the SteamVR overlay, speaker labels and phone display are best treated as experimental. [VERIFICATION.md](VERIFICATION.md) lists exactly what was and was not tested.
@@ -24,14 +26,14 @@ It listens to the audio that `VRChat.exe` plays (never your microphone), turns s
 - Editable word corrections and recognition hints; global shortcuts and a tray icon.
 - Optional phone display on your local network, protected by a PIN that changes every time it is turned on (off by default). The picture shows it with made-up sample captions.
 - Optional session-only speaker labels (off by default, experimental).
-- Optional **fast English captions** (off by default, experimental): a one-time 104 MB download lets English speech be captioned about half a second to a second after it ends, instead of about two. Other languages and all translation still use Whisper. See Settings.
+- Optional **fast English captions** (off by default, experimental): a one-time download of about 180 MB lets English speech be captioned about half a second to a second after it ends, instead of about two. Other languages and all translation still use Whisper. See Settings.
 - CPU only. There is no GPU backend in this version.
 
 ## Download and install
 
 You do not need to build anything.
 
-1. Open the project's **Releases** page and download `VRChatUniversalTranslator-1.1.5-win-x64-portable.zip` and `SHA256SUMS.txt`.
+1. Open the [version 1.1.5 release page](https://github.com/Wommper1/VRChatUniversalTranslator/releases/tag/v1.1.5) and download `VRChatUniversalTranslator-1.1.5-win-x64-portable.zip` and `SHA256SUMS.txt`.
 2. Check the download. In PowerShell:
    ```powershell
    Get-FileHash .\VRChatUniversalTranslator-1.1.5-win-x64-portable.zip -Algorithm SHA256
@@ -69,7 +71,7 @@ Download the new ZIP, extract it to a new folder, and run it. Your settings, dow
 
 ## Help and bug reports
 
-Open an issue on this repository and fill in the template. For a security problem, follow [SECURITY.md](SECURITY.md) instead of opening a public issue. Everyone taking part is expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+[Open an issue](https://github.com/Wommper1/VRChatUniversalTranslator/issues/new/choose) on this repository and fill in the template. For a security problem, follow [SECURITY.md](SECURITY.md) instead of opening a public issue. Everyone taking part is expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Build from source
 
