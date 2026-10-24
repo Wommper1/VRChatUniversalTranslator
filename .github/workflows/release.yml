@@ -60,6 +60,11 @@ jobs:
           if ($firstHeading -notlike "# $version *") {
             throw "The first heading in RELEASE_NOTES.md is '$firstHeading'; it must start with '# $version '."
           }
+          # The README's download links must point at this version, or visitors would be sent to an older release.
+          $readmeTags = [regex]::Matches((Get-Content -LiteralPath README.md -Raw -Encoding UTF8), 'releases/tag/(v[^)\s]+)') | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
+          if (-not $readmeTags -or @($readmeTags | Where-Object { $_ -ne "v$version" }).Count -gt 0) {
+            throw "README.md must link only to releases/tag/v$version for downloads (found: $($readmeTags -join ', '))."
+          }
           "version=$version" >> $env:GITHUB_OUTPUT
           Write-Host "Version $version"
 
