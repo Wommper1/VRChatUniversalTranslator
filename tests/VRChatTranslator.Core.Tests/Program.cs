@@ -146,6 +146,7 @@ internal static partial class Program
             ("the fast English model unpacks only the two expected files", TheFastEnglishModelUnpacksOnlyTheTwoExpectedFiles),
             ("the fast English model rejects unsafe, wrong or incomplete archives and leaves nothing behind", TheFastEnglishModelRejectsUnsafeWrongOrIncompleteArchives),
             ("the fast English model download is pinned and optional", TheFastEnglishModelDownloadIsPinnedAndOptional),
+            ("a broken fast English model fails when it is loaded, not on the first caption", ABrokenFastEnglishModelFailsWhenItIsLoaded),
             ("English routing never sends another language to the English-only engine", EnglishRoutingIsCautiousAboutOtherLanguages),
             ("the fast English engine captions speech without loading Whisper", TheFastEnglishEngineCaptionsSpeechWithoutLoadingWhisper)
         ];

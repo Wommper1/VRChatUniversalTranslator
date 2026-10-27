@@ -4,7 +4,7 @@ The portable app includes upstream license files in `licenses/`. OpenVR C# bindi
 
 - NAudio: MIT — https://github.com/naudio/NAudio
 - Whisper.net 1.9.1 and whisper.cpp: MIT — https://github.com/sandrohanea/whisper.net and https://github.com/ggml-org/whisper.cpp
-- sherpa-onnx 1.13.8: Apache-2.0 — https://github.com/k2-fsa/sherpa-onnx
+- sherpa-onnx 2.0.1: Apache-2.0 — https://github.com/k2-fsa/sherpa-onnx
 - ONNX Runtime, included by sherpa-onnx: MIT — https://github.com/microsoft/onnxruntime
 - Development only, not in the portable ZIP: the Silero VAD voice-detection model `tests/VRChatTranslator.Core.Tests/vad/silero_vad.onnx` (silero-vad v4 exported to ONNX by k2-fsa), used by the test tools. MIT, Copyright (c) 2020-present Silero Team, licence text in `tests/VRChatTranslator.Core.Tests/vad/SILERO_LICENSE.txt` — https://github.com/snakers4/silero-vad
 - OpenVR 2.15.6: Valve BSD-style license — https://github.com/ValveSoftware/openvr
