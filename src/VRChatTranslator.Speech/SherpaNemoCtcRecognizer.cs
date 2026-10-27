@@ -25,6 +25,21 @@ public sealed class SherpaNemoCtcRecognizer : ISpeechRecognizer
         config.ModelConfig.Debug = 0;
         config.DecodingMethod = "greedy_search";
         _recognizer = new OfflineRecognizer(config);
+        try
+        {
+            // sherpa-onnx 2.x no longer throws when a model cannot be loaded: it returns an empty recogniser that fails on first
+            // use. Decoding a moment of silence here makes a broken model fail now, where callers expect it, not on the first caption.
+            using var probe = _recognizer.CreateStream();
+            probe.AcceptWaveform(16_000, new float[1_600]);
+            _recognizer.Decode(probe);
+            _ = probe.Result.Text;
+        }
+        catch (Exception exception)
+        {
+            _recognizer.Dispose();
+            throw new InvalidDataException("The recogniser model could not be loaded.", exception);
+        }
+
         Name = "Parakeet (NeMo CTC, sherpa-onnx)";
     }
 

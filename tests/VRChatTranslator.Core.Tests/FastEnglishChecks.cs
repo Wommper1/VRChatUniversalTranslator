@@ -45,6 +45,29 @@ internal static partial class Program
         return folder;
     }
 
+    private static Task ABrokenFastEnglishModelFailsWhenItIsLoaded()
+    {
+        var folder = NewTempFolder();
+        try
+        {
+            var model = Path.Combine(folder, "model.int8.onnx");
+            var tokens = Path.Combine(folder, "tokens.txt");
+            File.WriteAllBytes(model, new byte[4096]);
+            File.WriteAllText(tokens, "<blk> 0\na 1\n");
+            try
+            {
+                using var recognizer = new SherpaNemoCtcRecognizer(model, tokens, 1);
+                throw new InvalidOperationException("A model file that is not a model was loaded without an error.");
+            }
+            catch (InvalidDataException)
+            {
+                // expected: the app then reports that the fast engine could not start and Whisper handles all speech
+            }
+        }
+        finally { Directory.Delete(folder, recursive: true); }
+        return Task.CompletedTask;
+    }
+
     private static async Task TheFastEnglishModelUnpacksOnlyTheTwoExpectedFiles()
     {
         var model = "model bytes"u8.ToArray();
