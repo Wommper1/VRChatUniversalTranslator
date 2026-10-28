@@ -1,5 +1,7 @@
 # VRChat Universal Translator
 
+[Project case study](CASE_STUDY.md) · [Meet Alex Shade](https://github.com/Wommper1) · [The Level Everything Company](https://leveleverythingcompany.github.io/)
+
 Live captions and English translation for VRChat, running entirely on your own Windows PC.
 
 **[Download version 1.1.5 for Windows 11](https://github.com/Wommper1/VRChatUniversalTranslator/releases/tag/v1.1.5)** (free, early release). Then follow [Download and install](#download-and-install) below.
@@ -7,6 +9,8 @@ Live captions and English translation for VRChat, running entirely on your own W
 It listens to the audio that `VRChat.exe` plays (never your microphone), turns speech into text with a local Whisper model, translates it to English, and shows the captions in a click-through desktop overlay, on a SteamVR dashboard overlay, and, if you switch it on, on a phone on your home network.
 
 > **Status: version 1.1.5, early release.** The build, 74 automated checks, the startup smoke test and the phone-server self-test pass, and the app has had a first real-world run with VRChat. Live VRChat sessions, a physical SteamVR headset, and a physical phone have **not** yet been through a full acceptance run, so the SteamVR overlay, speaker labels and phone display are best treated as experimental. [VERIFICATION.md](VERIFICATION.md) lists exactly what was and was not tested.
+
+> **Source versus download:** the default branch includes development changes newer than v1.1.5. Use the release tag and its bundled documentation when checking what is in the downloadable package.
 
 ## Why it is safe to run
 
